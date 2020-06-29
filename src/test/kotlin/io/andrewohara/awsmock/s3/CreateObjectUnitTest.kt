@@ -3,6 +3,7 @@ package io.andrewohara.awsmock.s3
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.Bucket
 import com.amazonaws.services.s3.model.GetObjectRequest
+import com.amazonaws.services.s3.model.ObjectMetadata
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
@@ -89,11 +90,31 @@ class CreateObjectUnitTest {
 
     @Test
     fun `replace existing object content with same content type`() {
-        // TODO
+        testObj.putObject(bucket.name, "foo", "bar")
+
+        testObj.putObject(bucket.name, "foo", "baz")
+
+        assertThat(testObj.listObjectsV2(bucket.name).keyCount).isEqualTo(1)
+        testObj.getObject(bucket.name, "foo").let { updated ->
+            assertThat(updated.objectMetadata.contentType).isEqualTo("text/plain")
+            assertThat(updated.objectContent.reader().readText()).isEqualTo("baz")
+        }
     }
 
     @Test
     fun `replace existing object content with new content type`() {
-        // TODO
+        testObj.putObject(bucket.name, "foo", "bar")
+
+        val metadata = ObjectMetadata().apply {
+            contentType = "application/json"
+        }
+        testObj.putObject(bucket.name, "foo", """{"data":"bar"}""".byteInputStream(), metadata)
+
+
+        assertThat(testObj.listObjectsV2(bucket.name).keyCount).isEqualTo(1)
+        testObj.getObject(bucket.name, "foo").let { updated ->
+            assertThat(updated.objectMetadata.contentType).isEqualTo("application/json")
+            assertThat(updated.objectContent.reader().readText()).isEqualTo("""{"data":"bar"}""")
+        }
     }
 }
