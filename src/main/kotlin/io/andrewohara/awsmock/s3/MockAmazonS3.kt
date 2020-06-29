@@ -298,4 +298,21 @@ class MockAmazonS3 @JvmOverloads constructor(
         val request = CopyObjectRequest(sourceBucketName, sourceKey, destinationBucketName, destinationKey)
         return copyObject(request)
     }
+
+    // get object metadata
+
+    override fun getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata {
+        // TODO handle missing bucket
+        val bucket = repo.getValue(getObjectMetadataRequest.bucketName)
+
+        // TODO handle missing object
+        val obj = bucket[getObjectMetadataRequest.key]!!
+
+        return obj.metadata
+    }
+
+    override fun getObjectMetadata(bucketName: String, key: String): ObjectMetadata {
+        val request = GetObjectMetadataRequest(bucketName, key)
+        return getObjectMetadata(request)
+    }
 }

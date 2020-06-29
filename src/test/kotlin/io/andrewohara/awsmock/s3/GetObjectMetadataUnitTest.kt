@@ -6,7 +6,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
 
-class PresignedUrlUnitTest {
+class GetObjectMetadataUnitTest {
 
     private lateinit var testObj: AmazonS3
     private lateinit var bucket: Bucket
@@ -18,23 +18,21 @@ class PresignedUrlUnitTest {
     }
 
     @Test
-    fun `generate pre-signed get url for object that doesn't exist`() {
+    fun `get metadata for object in missing bucket`() {
         // TODO
     }
 
     @Test
-    fun `generate pre-signed GET url for object`() {
-        testObj.putObject(bucket.name, "foo", "bar")
-
-        val url = testObj.generatePresignedUrl(bucket.name, "foo", null)
-        assertThat(url).isNotNull()
+    fun `get metadata for missing object`() {
+        // TODO
     }
 
     @Test
-    fun `generate pre-signed PUT url for object`() {
+    fun `get metadata`() {
         testObj.putObject(bucket.name, "foo", "bar")
 
-        val url = testObj.generatePresignedUrl(bucket.name, "foo", null)
-        assertThat(url).isNotNull()
+        val result = testObj.getObjectMetadata(bucket.name, "foo")
+        assertThat(result.contentType).isEqualTo("text/plain")
+        assertThat(result.contentLength).isEqualTo(3L)
     }
 }
