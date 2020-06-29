@@ -7,8 +7,9 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
+import java.nio.file.Files
 
-class CreateObjectUnitTest {
+class PutObjectUnitTest {
 
     private lateinit var testObj: AmazonS3
     private lateinit var bucket: Bucket
@@ -26,24 +27,56 @@ class CreateObjectUnitTest {
 
     @Test
     fun `put object with string content`() {
-        testObj.putObject(bucket.name, "foo", "bar")
+        val result = testObj.putObject(bucket.name, "foo", "bar")
 
+        assertThat(result.metadata.contentType).isEqualTo("text/plain")
         assertThat(testObj.doesObjectExist(bucket.name, "foo")).isTrue()
     }
 
     @Test
-    fun `put object from file`() {
-        // TODO
+    fun `put json object from file`() {
+        val src = Files.createTempFile("foo", ".json")
+        src.toFile().deleteOnExit()
+        Files.writeString(src, "bar")
+
+        val result = testObj.putObject(bucket.name, "foo", src.toFile())
+
+        assertThat(result.metadata.contentType).isEqualTo("application/json")
+    }
+
+    @Test
+    fun `put text object from file`() {
+        val src = Files.createTempFile("foo", ".txt")
+        src.toFile().deleteOnExit()
+        Files.writeString(src, "bar")
+
+        val result = testObj.putObject(bucket.name, "foo", src.toFile())
+
+        assertThat(result.metadata.contentType).isEqualTo("text/plain")
     }
 
     @Test
     fun `put object with json content type`() {
-        // TODO
+        val metadata = ObjectMetadata().apply {
+            contentType = "application/json"
+        }
+
+        """{"data":"foo"}""".byteInputStream().use { stream ->
+            val result = testObj.putObject(bucket.name, "foo", stream, metadata)
+            assertThat(result.metadata.contentType).isEqualTo("application/json")
+        }
     }
 
     @Test
-    fun `put object via inputStream`() {
-        // TODO
+    fun `put text via inputStream`() {
+        val metadata = ObjectMetadata().apply {
+            contentType = "text/plain"
+        }
+
+        "bar".byteInputStream().use { stream ->
+            val result = testObj.putObject(bucket.name, "foo", stream, metadata)
+            assertThat(result.metadata.contentType).isEqualTo("text/plain")
+        }
     }
 
     @Test
@@ -116,5 +149,20 @@ class CreateObjectUnitTest {
             assertThat(updated.objectMetadata.contentType).isEqualTo("application/json")
             assertThat(updated.objectContent.reader().readText()).isEqualTo("""{"data":"bar"}""")
         }
+    }
+
+    @Test
+    fun `putObject by stream with missing content length will be aut-filled in response`() {
+        val bytes = "bar".toByteArray()
+        val metadata = ObjectMetadata().apply {
+            contentType = "text/plain"
+        }
+
+        bytes.inputStream().use { stream ->
+            val result = testObj.putObject(bucket.name, "foo", stream, metadata)
+            assertThat(result.metadata.contentLength).isEqualTo(3L)
+        }
+
+        assertThat(testObj.getObject(bucket.name, "foo").objectMetadata.contentLength).isEqualTo(3L)
     }
 }

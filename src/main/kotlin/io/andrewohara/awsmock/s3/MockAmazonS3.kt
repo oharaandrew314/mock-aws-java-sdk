@@ -12,7 +12,7 @@ import java.time.Instant
 import java.util.*
 import java.util.function.Supplier
 
-class MockAmazonS3(
+class MockAmazonS3 @JvmOverloads constructor(
         private val timeProvider: Supplier<Instant> = Supplier { Instant.now() }
 ): AbstractAmazonS3() {
 
@@ -31,21 +31,24 @@ class MockAmazonS3(
 
     // create bucket
 
-    override fun createBucket(createBucketRequest: CreateBucketRequest) = createBucket(createBucketRequest.bucketName)
-
-    override fun createBucket(bucketName: String): Bucket {
+    override fun createBucket(createBucketRequest: CreateBucketRequest): Bucket {
         // TODO handle already exists case
 
-        val bucket = MockBucket(name = bucketName, created = timeProvider.get())
+        val bucket = MockBucket(name = createBucketRequest.bucketName, created = timeProvider.get())
 
-        repo[bucketName] = bucket
+        repo[createBucketRequest.bucketName] = bucket
 
         return bucket.toBucket()
     }
 
-    override fun createBucket(bucketName: String, region: Region) = createBucket(bucketName)
+    override fun createBucket(bucketName: String) = createBucket(bucketName, "us-east-1")
 
-    override fun createBucket(bucketName: String, region: String) = createBucket(bucketName)
+    override fun createBucket(bucketName: String, region: String) = createBucket(bucketName, Region.fromValue(region))
+
+    override fun createBucket(bucketName: String, region: Region): Bucket {
+        val request = CreateBucketRequest(bucketName)
+        return createBucket(request)
+    }
 
     // does bucket exist
 
@@ -82,16 +85,20 @@ class MockAmazonS3(
 
         val bucket = repo.getValue(putObjectRequest.bucketName)
 
+        val metadata = putObjectRequest.metadata.clone()
+        if (metadata.contentLength == 0L) {
+            metadata.contentLength = putObjectRequest.inputStream.available().toLong()
+        }
+
         putObjectRequest.inputStream.use { content ->
             bucket[putObjectRequest.key] = MockObject(
-                    key = putObjectRequest.key,
                     content = content.readAllBytes(),
-                    metadata = putObjectRequest.metadata
+                    metadata = metadata
             )
         }
 
         return PutObjectResult().apply {
-            metadata = putObjectRequest.metadata
+            this.metadata = metadata
         }
     }
 
@@ -191,12 +198,12 @@ class MockAmazonS3(
         val bucket = repo.getValue(listObjectsRequest.bucketName)
         val prefix = listObjectsRequest.prefix
 
-        val summaries = bucket.list()
-                .filter { if (prefix == null) true else it.key.startsWith(prefix) }
+        val summaries = bucket.keys()
+                .filter { if (prefix == null) true else it.startsWith(prefix) }
                 .map {
                     S3ObjectSummary().apply {
                         this.bucketName = listObjectsRequest.bucketName
-                        key = it.key
+                        key = it
                     }
                 }
                 .take(listObjectsRequest.maxKeys ?: Int.MAX_VALUE)
@@ -210,8 +217,6 @@ class MockAmazonS3(
 
     // list objects v2
 
-    override fun listObjectsV2(bucketName: String) = listObjects(bucketName).toV2()
-
     override fun listObjectsV2(listObjectsV2Request: ListObjectsV2Request): ListObjectsV2Result {
         val request = listObjectsV2Request.let {
             ListObjectsRequest(it.bucketName, it.prefix, null, it.delimiter, it.maxKeys)
@@ -220,7 +225,15 @@ class MockAmazonS3(
         return listObjects(request).toV2()
     }
 
-    override fun listObjectsV2(bucketName: String, prefix: String?) = listObjects(bucketName, prefix).toV2()
+    override fun listObjectsV2(bucketName: String, prefix: String?): ListObjectsV2Result {
+        val request = ListObjectsV2Request()
+                .withBucketName(bucketName)
+                .withPrefix(prefix)
+
+        return listObjectsV2(request)
+    }
+
+    override fun listObjectsV2(bucketName: String) = listObjectsV2(bucketName, null)
 
     private fun ObjectListing.toV2() = ListObjectsV2Result().let { v2 ->
         v2.bucketName = bucketName
@@ -238,7 +251,7 @@ class MockAmazonS3(
         val bucket = repo.getValue(deleteObjectsRequest.bucketName)
 
         val deleted = deleteObjectsRequest.keys
-                .mapNotNull { bucket.remove(it.key) }
+                .filter { bucket.remove(it.key) != null }
                 .map { DeleteObjectsResult.DeletedObject().apply {
                     this.key = it.key
                 } }
@@ -264,5 +277,25 @@ class MockAmazonS3(
 
     override fun generatePresignedUrl(bucketName: String, key: String, expiration: Date?): URL {
         return generatePresignedUrl(bucketName, key, expiration, HttpMethod.GET)
+    }
+
+    // copy object
+
+    override fun copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult {
+        // TODO handle missing buckets
+        val srcBucket = repo.getValue(copyObjectRequest.sourceBucketName)
+        val destBucket = repo.getValue(copyObjectRequest.destinationBucketName)
+
+        // TODO handle missing source object
+        val srcObject = srcBucket[copyObjectRequest.sourceKey]!!
+
+        destBucket[copyObjectRequest.destinationKey] = srcObject.copy()
+
+        return CopyObjectResult()
+    }
+
+    override fun copyObject(sourceBucketName: String, sourceKey: String, destinationBucketName: String, destinationKey: String): CopyObjectResult {
+        val request = CopyObjectRequest(sourceBucketName, sourceKey, destinationBucketName, destinationKey)
+        return copyObject(request)
     }
 }

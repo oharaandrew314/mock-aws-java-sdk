@@ -15,7 +15,7 @@ data class MockBucket(private val name: String, private val created: Instant) {
 
     fun remove(key: String): MockObject? = objects.remove(key)
 
-    fun list() = objects.values.toList()
+    fun keys() = objects.keys.toSet()
 
     operator fun contains(key: String) = key in objects
 
