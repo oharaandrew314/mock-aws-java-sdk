@@ -61,10 +61,35 @@ class MockAmazonS3(
     }
 
     override fun getObject(getObjectRequest: GetObjectRequest) = getObject(getObjectRequest.bucketName, getObjectRequest.key)
+
+    // List Objects
+
+    override fun listObjects(bucketName: String) = listObjects(bucketName, null)
+
+    override fun listObjects(bucketName: String, prefix: String?): ObjectListing {
+        // TODO handle bucket doesn't exist
+
+        val bucket = repo.getValue(bucketName)
+
+        val entries = bucket.objects.keys
+                .filter { if (prefix == null) true else it.startsWith(prefix) }
+                .map {
+                    S3ObjectSummary().apply {
+                        this.bucketName = bucketName
+                        key = it
+                    }
+                }
+
+        return ObjectListing().apply {
+            setPrefix(prefix)
+            setBucketName(bucketName)
+            objectSummaries.addAll(entries)
+        }
+    }
 }
 
 private class MockBucket {
-    private val objects = mutableMapOf<String, MockObject>()
+    val objects = mutableMapOf<String, MockObject>()
 
     operator fun set(key: String, obj: MockObject) {
         objects[key] = obj

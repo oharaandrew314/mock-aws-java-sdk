@@ -31,6 +31,21 @@ class CreateObjectUnitTest {
     }
 
     @Test
+    fun `put object from file`() {
+        // TODO
+    }
+
+    @Test
+    fun `put object with json content type`() {
+        // TODO
+    }
+
+    @Test
+    fun `put object via inputStream`() {
+        // TODO
+    }
+
+    @Test
     fun `missing object does not exist`() {
         assertThat(testObj.doesObjectExist(bucket.name, "foo")).isFalse()
     }
@@ -70,5 +85,15 @@ class CreateObjectUnitTest {
 
         assertThat(obj.key).isEqualTo("toll")
         assertThat(obj.objectContent.use { String(it?.readAllBytes()!!) }).isEqualTo("troll")
+    }
+
+    @Test
+    fun `replace existing object content with same content type`() {
+        // TODO
+    }
+
+    @Test
+    fun `replace existing object content with new content type`() {
+        // TODO
     }
 }
