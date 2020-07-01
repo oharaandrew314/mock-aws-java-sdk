@@ -1,7 +1,9 @@
 package io.andrewohara.awsmock.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.Bucket
+import io.andrewohara.awsmock.s3.S3Assertions.assertIsBucketNotFound
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
@@ -19,7 +21,8 @@ class ListObjectsV2UnitTest {
 
     @Test
     fun `list objects for bucket that doesn't exist`() {
-        // TODO
+        val exception = catchThrowableOfType({ testObj.listObjectsV2("missingBucket") }, AmazonS3Exception::class.java)
+        exception.assertIsBucketNotFound()
     }
 
     @Test
@@ -28,7 +31,7 @@ class ListObjectsV2UnitTest {
 
         assertThat(result.keyCount).isEqualTo(0)
         assertThat(result.bucketName).isEqualTo(bucket.name)
-        assertThat(result.prefix).isEqualTo(null)  // TODO verify this
+        assertThat(result.prefix).isEqualTo(null)
         assertThat(result.objectSummaries).isEmpty()
     }
 

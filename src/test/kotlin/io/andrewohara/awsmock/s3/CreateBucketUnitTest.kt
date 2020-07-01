@@ -1,6 +1,7 @@
 package io.andrewohara.awsmock.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.Bucket
 import com.amazonaws.services.s3.model.CreateBucketRequest
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
@@ -22,6 +23,19 @@ class CreateBucketUnitTest {
 
         assertThat(testObj.doesBucketExist("bucket")).isTrue()
         assertThat(testObj.doesBucketExistV2("bucket")).isTrue()
+    }
+
+    @Test
+    fun `create bucket that already exists should not create duplicate`() {
+        testObj.createBucket("bucket")
+        testObj.putObject("bucket", "foo", "bar")
+
+        // try duplicating bucket
+        val duplicate = testObj.createBucket("bucket")
+
+        assertThat(duplicate).isNotNull.extracting<String>(Bucket::getName).isEqualTo("bucket")
+        assertThat(testObj.listBuckets()).hasSize(1)  // ensure bucket not duplicated
+        assertThat(testObj.listObjectsV2("bucket").keyCount).isEqualTo(1)  // ensure objects not deleted
     }
 
     @Test

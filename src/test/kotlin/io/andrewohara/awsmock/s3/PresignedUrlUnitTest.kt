@@ -18,8 +18,15 @@ class PresignedUrlUnitTest {
     }
 
     @Test
+    fun `generate pre-signed get url for bucket that doesn't exist`() {
+        val url = testObj.generatePresignedUrl("missingBucket", "foo", null)
+        assertThat(url).isNotNull()
+    }
+
+    @Test
     fun `generate pre-signed get url for object that doesn't exist`() {
-        // TODO
+        val url = testObj.generatePresignedUrl(bucket.name, "foo", null)
+        assertThat(url).isNotNull()
     }
 
     @Test

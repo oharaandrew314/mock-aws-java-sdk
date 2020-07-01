@@ -1,6 +1,7 @@
 package io.andrewohara.awsmock.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.Bucket
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
@@ -19,12 +20,17 @@ class DeleteObjectUnitTest {
 
     @Test
     fun `delete object from missing bucket`() {
-        // TODO
+        val exception = catchThrowableOfType( { testObj.deleteObject("missingBucket", "foo") }, AmazonS3Exception::class.java)
+
+        assertThat(exception.errorMessage).isEqualTo("The specified bucket does not exist")
+        assertThat(exception.errorCode).isEqualTo("NoSuchBucket")
+        assertThat(exception.statusCode).isEqualTo(404)
     }
 
     @Test
     fun `delete missing object`() {
-        // TODO
+        // nothing should happen
+        testObj.deleteObject(bucket.name, "foo")
     }
 
     @Test

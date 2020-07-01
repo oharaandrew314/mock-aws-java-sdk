@@ -1,7 +1,10 @@
 package io.andrewohara.awsmock.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.Bucket
+import io.andrewohara.awsmock.s3.S3Assertions.assertIsBucketNotFound
+import io.andrewohara.awsmock.s3.S3Assertions.assertIsNotFound
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
@@ -19,12 +22,14 @@ class GetObjectMetadataUnitTest {
 
     @Test
     fun `get metadata for object in missing bucket`() {
-        // TODO
+        val exception = catchThrowableOfType({ testObj.getObjectMetadata("missingBucket", "foo") }, AmazonS3Exception::class.java)
+        exception.assertIsBucketNotFound()
     }
 
     @Test
     fun `get metadata for missing object`() {
-        // TODO
+        val exception = catchThrowableOfType({ testObj.getObjectMetadata(bucket.name, "foo") }, AmazonS3Exception::class.java)
+        exception.assertIsNotFound()
     }
 
     @Test

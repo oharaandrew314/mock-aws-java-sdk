@@ -2,6 +2,7 @@ package io.andrewohara.awsmock.s3
 
 import com.amazonaws.HttpMethod
 import com.amazonaws.services.s3.AbstractAmazonS3
+import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import com.amazonaws.services.s3.model.*
 import java.io.File
 import java.io.InputStream
@@ -32,10 +33,11 @@ class MockAmazonS3 @JvmOverloads constructor(
     // create bucket
 
     override fun createBucket(createBucketRequest: CreateBucketRequest): Bucket {
-        // TODO handle already exists case
+        if (repo.containsKey(createBucketRequest.bucketName)) {
+            return repo.getValue(createBucketRequest.bucketName).toBucket()
+        }
 
         val bucket = MockBucket(name = createBucketRequest.bucketName, created = timeProvider.get())
-
         repo[createBucketRequest.bucketName] = bucket
 
         return bucket.toBucket()
@@ -63,6 +65,16 @@ class MockAmazonS3 @JvmOverloads constructor(
     }
 
     override fun deleteBucket(deleteBucketRequest: DeleteBucketRequest) {
+        val bucket = repo[deleteBucketRequest.bucketName] ?: throw createNoSuchBucketException()
+
+        if (bucket.keys().isNotEmpty()) {
+            throw AmazonS3ExceptionBuilder().apply {
+                errorMessage = "The bucket you tried to delete is not empty"
+                errorCode = "BucketNotEmpty"
+                statusCode = 409
+            }.build()
+        }
+
         repo.remove(deleteBucketRequest.bucketName)
     }
 
@@ -81,9 +93,7 @@ class MockAmazonS3 @JvmOverloads constructor(
     }
 
     override fun putObject(putObjectRequest: PutObjectRequest): PutObjectResult {
-        // TODO handle bucket doesn't exist
-
-        val bucket = repo.getValue(putObjectRequest.bucketName)
+        val bucket = repo[putObjectRequest.bucketName] ?: throw createNoSuchBucketException()
 
         val metadata = putObjectRequest.metadata.clone()
         if (metadata.contentLength == 0L) {
@@ -122,22 +132,16 @@ class MockAmazonS3 @JvmOverloads constructor(
     // does object exist
 
     override fun doesObjectExist(bucketName: String, objectName: String): Boolean {
-        // TODO handle bucket doesn't exist
-
-        val bucket = repo.getValue(bucketName)
+        val bucket = repo[bucketName] ?: return false
         return objectName in bucket
     }
 
     // get object
 
     override fun getObject(bucketName: String, key: String): S3Object {
-        // TODO handle bucket doesn't exist
+        val bucket = repo[bucketName] ?: throw createNoSuchBucketException()
 
-        val bucket = repo.getValue(bucketName)
-
-        // TODO handle object doesn't exist
-
-        val obj = bucket[key]!!
+        val obj = bucket[key] ?: throw createNoSuchKeyException()
 
         return S3Object().apply {
             setBucketName(bucketName)
@@ -150,8 +154,6 @@ class MockAmazonS3 @JvmOverloads constructor(
     override fun getObject(getObjectRequest: GetObjectRequest) = getObject(getObjectRequest.bucketName, getObjectRequest.key)
 
     override fun getObject(getObjectRequest: GetObjectRequest, destinationFile: File): ObjectMetadata {
-        // TODO handle object not found
-
         val result = getObject(getObjectRequest)
         result.objectContent.use {
             Files.copy(it, destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
@@ -161,8 +163,6 @@ class MockAmazonS3 @JvmOverloads constructor(
     }
 
     override fun getObjectAsString(bucketName: String, key: String): String {
-        // TODO handle object not found
-
         getObject(bucketName, key).objectContent.use {
             return it.reader().readText()
         }
@@ -171,9 +171,7 @@ class MockAmazonS3 @JvmOverloads constructor(
     // delete object
 
     override fun deleteObject(deleteObjectRequest: DeleteObjectRequest) {
-        // TODO handle missing bucket
-
-        val bucket = repo.getValue(deleteObjectRequest.bucketName)
+        val bucket = repo[deleteObjectRequest.bucketName] ?: throw createNoSuchBucketException()
 
         bucket.remove(deleteObjectRequest.key)
     }
@@ -193,9 +191,7 @@ class MockAmazonS3 @JvmOverloads constructor(
     }
 
     override fun listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing {
-        // TODO handle bucket doesn't exist
-
-        val bucket = repo.getValue(listObjectsRequest.bucketName)
+        val bucket = repo[listObjectsRequest.bucketName] ?: throw createNoSuchBucketException()
         val prefix = listObjectsRequest.prefix
 
         val summaries = bucket.keys()
@@ -246,9 +242,7 @@ class MockAmazonS3 @JvmOverloads constructor(
     // delete objects
 
     override fun deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): DeleteObjectsResult {
-        // TODO handle missing bucket
-
-        val bucket = repo.getValue(deleteObjectsRequest.bucketName)
+        val bucket = repo[deleteObjectsRequest.bucketName] ?: throw createNoSuchBucketException()
 
         val deleted = deleteObjectsRequest.keys
                 .filter { bucket.remove(it.key) != null }
@@ -262,8 +256,6 @@ class MockAmazonS3 @JvmOverloads constructor(
     // Presigned URLs
 
     override fun generatePresignedUrl(generatePresignedUrlRequest: GeneratePresignedUrlRequest): URL {
-        // TODO handle bucket not found
-
         return URL("https", "${generatePresignedUrlRequest.bucketName}.s3.aws.fake", generatePresignedUrlRequest.key)
     }
 
@@ -282,12 +274,10 @@ class MockAmazonS3 @JvmOverloads constructor(
     // copy object
 
     override fun copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult {
-        // TODO handle missing buckets
-        val srcBucket = repo.getValue(copyObjectRequest.sourceBucketName)
-        val destBucket = repo.getValue(copyObjectRequest.destinationBucketName)
+        val srcBucket = repo[copyObjectRequest.sourceBucketName] ?: throw createNoSuchBucketException()
+        val destBucket = repo[copyObjectRequest.destinationBucketName] ?: throw createNoSuchBucketException()
 
-        // TODO handle missing source object
-        val srcObject = srcBucket[copyObjectRequest.sourceKey]!!
+        val srcObject = srcBucket[copyObjectRequest.sourceKey] ?: throw createNoSuchKeyException()
 
         destBucket[copyObjectRequest.destinationKey] = srcObject.copy()
 
@@ -302,11 +292,9 @@ class MockAmazonS3 @JvmOverloads constructor(
     // get object metadata
 
     override fun getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata {
-        // TODO handle missing bucket
-        val bucket = repo.getValue(getObjectMetadataRequest.bucketName)
+        val bucket = repo[getObjectMetadataRequest.bucketName] ?: throw createNoSuchBucketException()
 
-        // TODO handle missing object
-        val obj = bucket[getObjectMetadataRequest.key]!!
+        val obj = bucket[getObjectMetadataRequest.key] ?: throw createObjectNotFoundException()
 
         return obj.metadata
     }
@@ -314,5 +302,41 @@ class MockAmazonS3 @JvmOverloads constructor(
     override fun getObjectMetadata(bucketName: String, key: String): ObjectMetadata {
         val request = GetObjectMetadataRequest(bucketName, key)
         return getObjectMetadata(request)
+    }
+
+    private fun createNoSuchBucketException(requestIdOverride: UUID? = null): AmazonS3Exception {
+        val extendedRequestId = (requestIdOverride ?: UUID.randomUUID()).toString()
+        return AmazonS3ExceptionBuilder().apply {
+                errorMessage = "The specified bucket does not exist"
+                statusCode = 404
+                errorCode = "NoSuchBucket"
+                requestId = extendedRequestId.split("-").last()
+                setExtendedRequestId(extendedRequestId)
+            }
+            .build()
+    }
+
+    private fun createObjectNotFoundException(requestIdOverride: UUID? = null): AmazonS3Exception {
+        val extendedRequestId = (requestIdOverride ?: UUID.randomUUID()).toString()
+        return AmazonS3ExceptionBuilder().apply {
+                errorMessage = "Not Found"
+                errorCode = "404 Not Found"
+                statusCode = 404
+                requestId = extendedRequestId.split("-").last()
+                setExtendedRequestId(extendedRequestId)
+            }
+            .build()
+    }
+
+    private fun createNoSuchKeyException(requestIdOverride: UUID? = null): AmazonS3Exception {
+        val extendedRequestId = (requestIdOverride ?: UUID.randomUUID()).toString()
+        return AmazonS3ExceptionBuilder().apply {
+            errorMessage = "The specified key does not exist"
+            errorCode = "NoSuchKey"
+            statusCode = 404
+            requestId = extendedRequestId.split("-").last()
+            setExtendedRequestId(extendedRequestId)
+        }
+                .build()
     }
 }

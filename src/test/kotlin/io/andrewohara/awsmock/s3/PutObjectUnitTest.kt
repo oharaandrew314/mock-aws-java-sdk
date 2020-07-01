@@ -1,9 +1,11 @@
 package io.andrewohara.awsmock.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.Bucket
 import com.amazonaws.services.s3.model.GetObjectRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
+import io.andrewohara.awsmock.s3.S3Assertions.assertIsBucketNotFound
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
@@ -22,7 +24,8 @@ class PutObjectUnitTest {
 
     @Test
     fun `put object into missing bucket`() {
-        // TODO
+        val exception = catchThrowableOfType({ testObj.putObject("missingBucket", "foo", "bar") }, AmazonS3Exception::class.java)
+        exception.assertIsBucketNotFound()
     }
 
     @Test
@@ -82,21 +85,6 @@ class PutObjectUnitTest {
     @Test
     fun `missing object does not exist`() {
         assertThat(testObj.doesObjectExist(bucket.name, "foo")).isFalse()
-    }
-
-    @Test
-    fun `find if object exists in missing bucket`() {
-        // TODO
-    }
-
-    @Test
-    fun `get missing object content`() {
-        // TODO
-    }
-
-    @Test
-    fun `get content for object in missing bucket`() {
-        // TODO
     }
 
     @Test

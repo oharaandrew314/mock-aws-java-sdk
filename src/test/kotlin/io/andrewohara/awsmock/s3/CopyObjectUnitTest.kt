@@ -1,7 +1,10 @@
 package io.andrewohara.awsmock.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.Bucket
+import io.andrewohara.awsmock.s3.S3Assertions.assertIsBucketNotFound
+import io.andrewohara.awsmock.s3.S3Assertions.assertIsNoSuchKey
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
@@ -19,17 +22,31 @@ class CopyObjectUnitTest {
 
     @Test
     fun `copy object from bucket that doesn't exist`() {
-        // TODO
+        val exception = catchThrowableOfType(
+                { testObj.copyObject("missingBucket", "foo", bucket.name, "foo") },
+                AmazonS3Exception::class.java
+        )
+        exception.assertIsBucketNotFound()
     }
 
     @Test
     fun `copy object to bucket that doesn't exist`() {
-        // TODO
+        testObj.putObject(bucket.name, "foo", "bar")
+
+        val exception = catchThrowableOfType(
+                { testObj.copyObject(bucket.name, "foo", "missingBucket", "foo") },
+                AmazonS3Exception::class.java
+        )
+        exception.assertIsBucketNotFound()
     }
 
     @Test
     fun `copy object that doesn't exist`() {
-        // TODO
+        val exception = catchThrowableOfType(
+                { testObj.copyObject(bucket.name, "foo", bucket.name, "bar") },
+                AmazonS3Exception::class.java
+        )
+        exception.assertIsNoSuchKey()
     }
 
     @Test

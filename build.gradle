@@ -31,7 +31,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.95 // jacoco isn't smart enough to detect 100% kotlin coverage
+                minimum = 0.98 // jacoco isn't smart enough to detect 100% kotlin coverage
             }
         }
     }
