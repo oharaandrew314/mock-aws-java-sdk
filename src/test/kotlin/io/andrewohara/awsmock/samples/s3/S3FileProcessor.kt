@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.samples.s3
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 
-class S3FileProcessor(
+class S3FileProcessor @JvmOverloads constructor(
         private val sourceBucket: String,
         private val catsBucket: String,
         s3: AmazonS3? = null
