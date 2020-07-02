@@ -1,3 +1,5 @@
+![Test](https://github.com/oharaandrew314/mock-aws-java-sdk/workflows/Test/badge.svg)
+
 # mock-aws-java-sdk
 
 A library that lets you mock AWS out of your tests, allowing you to achieve for better coverage with far less hassle.
