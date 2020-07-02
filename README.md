@@ -6,51 +6,60 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 
 TODO()
 
-## Quickstart
+## QuickStart
 
-Any well-designed class with external dependencies will let you inject them, so the same follows for any AWS mediator.
-Just modify your class to accept an instance of the AWS interface you need.
+Any well-designed class will let you inject its dependencies, so the same can apply to your AWS mediators.
+Just modify them to accept an implementation of the AWS client interface, and then inject the mocked version during your tests.
 
-```kotlin
-class ImportantFileProcessor (s3: AmazonS3? = null) {
-    private val s3Client = s3 ?: AmazonS3ClientBuilder.defaultClient()
+```java
+// ImportantFileProcessor.java
 
-    fun process() {
-        // do stuff with the s3Client...
-    }
-}
+public class ImportantFileProcessor {
 
-class ImportantFileProcessorUnitTest {
-    
-    private lateinit var s3Client: AmazonS3
-    private lateinit var testObj: ImportantFileProcessor
+    private final AmazonS3 s3Client;
 
-    @Before
-    fun setup() {
-        s3Client = MockAmazonS3()
-        testObj = ImportantFileProcessor(s3Client)
+    public ImportantFileProcessor() {
+        this(AmazonS3ClientBuilder.defaultClient());
     }
 
-    @Test
-    fun `process default dataset`() {
-        // use s3Client to initialize state
+    public ImportantFileProcessor(AmazonS3Client s3Client) {
+        this.s3Client = s3Client;
+    }
 
-        testObj.process()
-
-        // use s3Client to verify state
-        // verify rest of state
-    }   
+    public void process() {
+        // do stuff with the s3Client
+    }
 }
 ```
+
+```java
+// ImportantFileProcessorUnitTest.java
+
+public class ImportantFileProcessorUnitTest {
+
+    private final AmazonS3 s3Client = new MockAmazonS3();
+    private final ImportFileProcessor testObj = new ImportantFileProcessor(s3Client);
+
+    @Test
+    public void processDefaultDataset() {
+        // use s3Client to initialize state
+
+        testObj.process();
+
+        // use s3Client to verify state
+    }
+}
+```
+
+## Supported Services
+
+| Service | Support | Mock Class |
+| ------- | ------- | ---------- |
+| S3 | Core Functionality Done | io.andrewohara.awsmock.s3.MockAmazonS3() |
+| SQS | Core Functionality Done | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
 
 ## Samples
 
 There are a variety of sample projects available to help get you started.
 
 TODO link to samples
-
-## Supported Services
-
-| Service | Support | Mock Class |
-| ------- | ------- | ---------- |
-| S3 | Core Methods Done | io.andrewohara.awsmock.s3.MockAmazonS3() |
