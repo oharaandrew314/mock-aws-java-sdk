@@ -70,7 +70,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'io.andrewohara'
             artifactId = 'mock-aws-sdk-java'
-            version = '0.1.0-alpha6'
+            version = '0.1.0-alpha7'
 
             from components.kotlin
             artifact sourcesJar
