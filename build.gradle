@@ -48,17 +48,13 @@ jacocoTestCoverageVerification {
 }
 check.dependsOn jacocoTestCoverageVerification
 
-/*
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
-artifacts {
-    archives sourcesJar
-}
-
 publishing {
+    /*
     repositories {
         maven {
             name = "GitHubPackages"
@@ -69,6 +65,7 @@ publishing {
             }
         }
     }
+    */
     publications {
         maven(MavenPublication) {
             groupId = 'io.andrewohara'
@@ -76,7 +73,7 @@ publishing {
             version = '0.1.0-alpha6'
 
             from components.kotlin
+            artifact sourcesJar
         }
     }
 }
-*/
