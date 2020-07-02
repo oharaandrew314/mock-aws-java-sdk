@@ -102,7 +102,7 @@ class MockAmazonS3 @JvmOverloads constructor(
 
         putObjectRequest.inputStream.use { content ->
             bucket[putObjectRequest.key] = MockObject(
-                    content = content.readAllBytes(),
+                    content = content.readBytes(),
                     metadata = metadata
             )
         }
