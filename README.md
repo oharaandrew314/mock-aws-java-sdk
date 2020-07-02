@@ -6,7 +6,7 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 ## Requirements
 
 None of the AWS SDKs are provided by this package.
-You must seperately install each SDK you want to use; versions `1.11.300` and above are supported.
+You must separately install each SDK you want to use; versions `1.11.300` and above are supported.
 
 ## Install 
 
