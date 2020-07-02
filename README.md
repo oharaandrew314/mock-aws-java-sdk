@@ -1,4 +1,5 @@
 ![Test](https://github.com/oharaandrew314/mock-aws-java-sdk/workflows/Test/badge.svg)
+[![codecov](https://codecov.io/gh/oharaandrew314/mock-aws-java-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/oharaandrew314/mock-aws-java-sdk)
 
 # mock-aws-java-sdk
 
