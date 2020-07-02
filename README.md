@@ -1,4 +1,4 @@
-# mock-aws-sdk-java
+# mock-aws-java-sdk
 
 A library that lets you mock AWS out of your tests, allowing you to achieve for better coverage with far less hassle.
 
@@ -6,7 +6,7 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 
 Install the latest version from Jitpack
 
-[![](https://jitpack.io/v/oharaandrew314/mock-aws-sdk-java.svg)](https://jitpack.io/#oharaandrew314/mock-aws-sdk-java)
+[![](https://jitpack.io/v/oharaandrew314/mock-aws-java-sdk.svg)](https://jitpack.io/#oharaandrew314/mock-aws-java-sdk)
 
 ## QuickStart
 
@@ -64,4 +64,4 @@ public class ImportantFileProcessorUnitTest {
 
 There are a variety of sample projects available to help get you started.
 
-[Check out the samples](https://github.com/oharaandrew314/mock-aws-sdk-java/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
+[Check out the samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
