@@ -54,7 +54,7 @@ class GetObjectUnitTest {
 
         val metadata = testObj.getObject(request, dest.toFile())
         assertThat(metadata.contentType).isEqualTo("text/plain")
-        assertThat(Files.readString(dest)).isEqualTo("bar")
+        assertThat(dest.toFile().readText()).isEqualTo("bar")
     }
 
     // as string

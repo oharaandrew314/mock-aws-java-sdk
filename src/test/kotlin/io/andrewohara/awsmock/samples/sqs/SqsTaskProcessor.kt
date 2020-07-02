@@ -18,7 +18,7 @@ class SqsTaskProcessor(private val cat: Cat, private val queue: String, sqs: Ama
                 "trill" -> handleTrill()
                 "meow" -> handleMeow()
                 "purr" -> {
-                    sqsClient.changeMessageVisibility(queue, message.receiptHandle, pettingSessionTime.toSeconds().toInt())
+                    sqsClient.changeMessageVisibility(queue, message.receiptHandle, pettingSessionTime.seconds.toInt())
                     handlePurr()
                 }
             }

@@ -40,7 +40,7 @@ class PutObjectUnitTest {
     fun `put json object from file`() {
         val src = Files.createTempFile("foo", ".json")
         src.toFile().deleteOnExit()
-        Files.writeString(src, "bar")
+        src.toFile().writeText("bar")
 
         val result = testObj.putObject(bucket.name, "foo", src.toFile())
 
@@ -51,7 +51,7 @@ class PutObjectUnitTest {
     fun `put text object from file`() {
         val src = Files.createTempFile("foo", ".txt")
         src.toFile().deleteOnExit()
-        Files.writeString(src, "bar")
+        src.toFile().writeText("bar")
 
         val result = testObj.putObject(bucket.name, "foo", src.toFile())
 
@@ -95,7 +95,7 @@ class PutObjectUnitTest {
         assertThat(obj.bucketName).isEqualTo(bucket.name)
         assertThat(obj.key).isEqualTo("foo")
         assertThat(obj.objectMetadata.contentType).isEqualTo("text/plain")
-        assertThat(obj.objectContent.use { String(it?.readAllBytes()!!) }).isEqualTo("bar")
+        assertThat(obj.objectContent.use { String(it?.readBytes()!!) }).isEqualTo("bar")
     }
 
     @Test
@@ -106,7 +106,7 @@ class PutObjectUnitTest {
         val obj = testObj.getObject(request)
 
         assertThat(obj.key).isEqualTo("toll")
-        assertThat(obj.objectContent.use { String(it?.readAllBytes()!!) }).isEqualTo("troll")
+        assertThat(obj.objectContent.use { String(it?.readBytes()!!) }).isEqualTo("troll")
     }
 
     @Test
