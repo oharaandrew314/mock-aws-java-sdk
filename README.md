@@ -62,4 +62,4 @@ public class ImportantFileProcessorUnitTest {
 
 There are a variety of sample projects available to help get you started.
 
-TODO link to samples
+[Check out the samples](https://github.com/oharaandrew314/mock-aws-sdk-java/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
