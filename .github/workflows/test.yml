@@ -37,9 +37,4 @@ jobs:
           java-version: 11
 
       - name: Test
-        run: sh ./gradlew check jacocoTestReport
-
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        run: sh ./gradlew check
