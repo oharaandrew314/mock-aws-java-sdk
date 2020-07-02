@@ -4,7 +4,9 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 
 ## Install 
 
-TODO()
+Install the latest version from Jitpack
+
+[![](https://jitpack.io/v/oharaandrew314/mock-aws-sdk-java.svg)](https://jitpack.io/#oharaandrew314/mock-aws-sdk-java)
 
 ## QuickStart
 
