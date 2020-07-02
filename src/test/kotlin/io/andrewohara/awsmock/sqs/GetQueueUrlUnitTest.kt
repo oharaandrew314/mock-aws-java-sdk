@@ -17,8 +17,12 @@ class GetQueueUrlUnitTest {
 
     @Test
     fun `get url for queue`() {
-        val queue = client.createQueue("foo")
+        val foo = client.createQueue("foo")
+        val bar = client.createQueue("bar")
+        val baz = client.createQueue("baz")
 
-        assertThat(client.getQueueUrl("foo").queueUrl).isEqualTo(queue.queueUrl)
+        assertThat(client.getQueueUrl("foo").queueUrl).isEqualTo(foo.queueUrl)
+        assertThat(client.getQueueUrl("bar").queueUrl).isEqualTo(bar.queueUrl)
+        assertThat(client.getQueueUrl("baz").queueUrl).isEqualTo(baz.queueUrl)
     }
 }

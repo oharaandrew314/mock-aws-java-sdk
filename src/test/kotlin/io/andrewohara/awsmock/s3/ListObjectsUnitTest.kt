@@ -3,6 +3,7 @@ package io.andrewohara.awsmock.s3
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.Bucket
+import com.amazonaws.services.s3.model.ListObjectsRequest
 import io.andrewohara.awsmock.s3.S3Assertions.assertIsBucketNotFound
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
@@ -68,5 +69,15 @@ class ListObjectsUnitTest {
             assertThat(obj1.bucketName).isEqualTo(bucket.name)
             assertThat(obj1.key).isEqualTo("foo/obj")
         }
+    }
+
+    @Test
+    fun `list objects with key limit`() {
+        testObj.putObject(bucket.name, "foo/obj", "bar")
+        testObj.putObject(bucket.name, "toll/obj", "troll")
+
+        val result = testObj.listObjects(ListObjectsRequest().withBucketName(bucket.name).withMaxKeys(1))
+
+        assertThat(result.objectSummaries).hasSize(1)
     }
 }

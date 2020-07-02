@@ -72,5 +72,5 @@ object SQSExceptions {
             .withId(id)
             .withCode(errorCode)
             .withMessage(errorMessage)
-            .withSenderFault(errorType == AmazonServiceException.ErrorType.Client)
+            .withSenderFault(true)
 }

@@ -11,7 +11,6 @@ import io.andrewohara.awsmock.sqs.SQSExceptions.createQueueDoesNotExistException
 import io.andrewohara.awsmock.sqs.SQSExceptions.createQueueExistsException
 import io.andrewohara.awsmock.sqs.SQSExceptions.toBatchResultErrorEntry
 import java.net.URL
-import java.time.Duration
 import java.util.*
 
 class MockAmazonSQS: AbstractAmazonSQS() {
@@ -26,7 +25,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
     // helpers
 
     operator fun get(url: String) = queues.firstOrNull { it.url.toString() == url }
-    private fun getByName(name: String) = queues.firstOrNull { it.name == name }
 
     // Create Queue
 
@@ -100,7 +98,7 @@ class MockAmazonSQS: AbstractAmazonSQS() {
     }
 
     override fun getQueueUrl(request: GetQueueUrlRequest): GetQueueUrlResult {
-        val queue = getByName(request.queueName) ?: throw createQueueDoesNotExistException()
+        val queue = queues.firstOrNull { it.name == request.queueName } ?: throw createQueueDoesNotExistException()
 
         return GetQueueUrlResult().withQueueUrl(queue.url.toString())
     }
@@ -112,8 +110,7 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
         val message = MockMessage(
                 id = UUID.randomUUID().toString(),
-                body = request.messageBody,
-                delay = request.delaySeconds?.let { Duration.ofSeconds(it.toLong()) } ?: Duration.ZERO
+                body = request.messageBody
         )
 
         queue.messages.offer(message)
@@ -257,7 +254,7 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
         if (message !in (queue.messages + queue.deleted)) throw createInvalidReceiptHandleForQueueException(request.receiptHandle)
 
-        message.delay = Duration.ofSeconds(request.visibilityTimeout.toLong())
+        // happy-path is actually a no-op because nothing here currently cares about the delay
 
         return ChangeMessageVisibilityResult()
     }
@@ -287,7 +284,7 @@ class MockAmazonSQS: AbstractAmazonSQS() {
                 message !in (queue.messages + queue.deleted) -> failures.add(createInvalidReceiptHandleForQueueException(entry.receiptHandle).toBatchResultErrorEntry(entry.id))
                 entry.visibilityTimeout !in validVisibilityTimeouts -> failures.add(createInvalidParameterException().toBatchResultErrorEntry(entry.id))
                 else -> {
-                    message.delay = Duration.ofSeconds(entry.visibilityTimeout.toLong())
+                    // happy-path is actually a no-op because nothing here currently cares about the delay
                     successes.add(ChangeMessageVisibilityBatchResultEntry().withId(entry.id))
                 }
             }

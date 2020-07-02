@@ -5,7 +5,6 @@ import com.amazonaws.services.sqs.model.SendMessageRequest
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
-import java.time.Duration
 
 class SendMessageUnitTest {
 
@@ -27,8 +26,7 @@ class SendMessageUnitTest {
         assertThat(client[queue.queueUrl]!!.messages).containsExactly(
                 MockMessage(
                         id = result.messageId,
-                        body = "meow",
-                        delay = Duration.ZERO
+                        body = "meow"
                 )
         )
     }
@@ -38,8 +36,8 @@ class SendMessageUnitTest {
         val queue = client.createQueue("lolcats")
 
         val request = SendMessageRequest()
-                .withQueueUrl(queue.queueUrl)
-                .withMessageBody("meow")
+                .withMessageBody("meow")                .withQueueUrl(queue.queueUrl)
+
                 .withDelaySeconds(30)
         val result = client.sendMessage(request)
 
@@ -47,8 +45,7 @@ class SendMessageUnitTest {
         assertThat(client[queue.queueUrl]!!.messages).containsExactly(
                 MockMessage(
                         id = result.messageId,
-                        body = "meow",
-                        delay = Duration.ofSeconds(30)
+                        body = "meow"
                 )
         )
     }

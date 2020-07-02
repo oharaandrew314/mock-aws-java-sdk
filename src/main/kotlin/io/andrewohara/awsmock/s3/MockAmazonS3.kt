@@ -304,8 +304,8 @@ class MockAmazonS3 @JvmOverloads constructor(
         return getObjectMetadata(request)
     }
 
-    private fun createNoSuchBucketException(requestIdOverride: UUID? = null): AmazonS3Exception {
-        val extendedRequestId = (requestIdOverride ?: UUID.randomUUID()).toString()
+    private fun createNoSuchBucketException(): AmazonS3Exception {
+        val extendedRequestId = UUID.randomUUID().toString()
         return AmazonS3ExceptionBuilder().apply {
                 errorMessage = "The specified bucket does not exist"
                 statusCode = 404
@@ -316,8 +316,8 @@ class MockAmazonS3 @JvmOverloads constructor(
             .build()
     }
 
-    private fun createObjectNotFoundException(requestIdOverride: UUID? = null): AmazonS3Exception {
-        val extendedRequestId = (requestIdOverride ?: UUID.randomUUID()).toString()
+    private fun createObjectNotFoundException(): AmazonS3Exception {
+        val extendedRequestId = UUID.randomUUID().toString()
         return AmazonS3ExceptionBuilder().apply {
                 errorMessage = "Not Found"
                 errorCode = "404 Not Found"
@@ -328,8 +328,8 @@ class MockAmazonS3 @JvmOverloads constructor(
             .build()
     }
 
-    private fun createNoSuchKeyException(requestIdOverride: UUID? = null): AmazonS3Exception {
-        val extendedRequestId = (requestIdOverride ?: UUID.randomUUID()).toString()
+    private fun createNoSuchKeyException(): AmazonS3Exception {
+        val extendedRequestId = UUID.randomUUID().toString()
         return AmazonS3ExceptionBuilder().apply {
             errorMessage = "The specified key does not exist"
             errorCode = "NoSuchKey"
