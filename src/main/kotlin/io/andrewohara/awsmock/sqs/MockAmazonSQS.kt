@@ -28,11 +28,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
     // Create Queue
 
-    override fun createQueue(queueName: String): CreateQueueResult {
-        val request = CreateQueueRequest(queueName)
-        return createQueue(request)
-    }
-
     override fun createQueue(request: CreateQueueRequest): CreateQueueResult {
         if (request.queueName == null) throw createInvalidParameterException()
 
@@ -54,30 +49,12 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
     // Delete Queue
 
-    override fun deleteQueue(queueUrl: String): DeleteQueueResult {
-        val request = DeleteQueueRequest().withQueueUrl(queueUrl)
-
-        return deleteQueue(request)
-    }
-
     override fun deleteQueue(request: DeleteQueueRequest): DeleteQueueResult {
         val queue = get(request.queueUrl) ?: throw createQueueDoesNotExistException()
 
         queues.remove(queue)
 
         return DeleteQueueResult()
-    }
-
-    // List Queues
-
-    override fun listQueues(): ListQueuesResult {
-        val request = ListQueuesRequest()
-        return listQueues(request)
-    }
-
-    override fun listQueues(queueNamePrefix: String): ListQueuesResult {
-        val request = ListQueuesRequest().withQueueNamePrefix(queueNamePrefix)
-        return listQueues(request)
     }
 
     override fun listQueues(request: ListQueuesRequest): ListQueuesResult {
@@ -88,22 +65,11 @@ class MockAmazonSQS: AbstractAmazonSQS() {
         return ListQueuesResult().withQueueUrls(urls)
     }
 
-    // Get Queue URL
-
-    override fun getQueueUrl(queueName: String): GetQueueUrlResult {
-        val request = GetQueueUrlRequest()
-                .withQueueName(queueName)
-
-        return getQueueUrl(request)
-    }
-
     override fun getQueueUrl(request: GetQueueUrlRequest): GetQueueUrlResult {
         val queue = queues.firstOrNull { it.name == request.queueName } ?: throw createQueueDoesNotExistException()
 
         return GetQueueUrlResult().withQueueUrl(queue.url.toString())
     }
-
-    // Send Message
 
     override fun sendMessage(request: SendMessageRequest): SendMessageResult {
         val queue = get(request.queueUrl) ?: throw createQueueDoesNotExistException()
@@ -117,16 +83,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
         return SendMessageResult().withMessageId(message.id)
     }
-
-    override fun sendMessage(queueUrl: String, messageBody: String): SendMessageResult {
-        val request = SendMessageRequest()
-                .withQueueUrl(queueUrl)
-                .withMessageBody(messageBody)
-
-        return sendMessage(request)
-    }
-
-    // Send Message Batch
 
     override fun sendMessageBatch(request: SendMessageBatchRequest): SendMessageBatchResult {
         val queue = get(request.queueUrl) ?: throw createQueueDoesNotExistException()
@@ -150,30 +106,12 @@ class MockAmazonSQS: AbstractAmazonSQS() {
         return SendMessageBatchResult().withSuccessful(entryResults)
     }
 
-    override fun sendMessageBatch(queueUrl: String, entries: List<SendMessageBatchRequestEntry>): SendMessageBatchResult {
-        val request = SendMessageBatchRequest()
-                .withQueueUrl(queueUrl)
-                .withEntries(entries)
-
-        return sendMessageBatch(request)
-    }
-
-    // Receive Message
-
-    override fun receiveMessage(queueUrl: String): ReceiveMessageResult {
-        val request = ReceiveMessageRequest()
-                .withQueueUrl(queueUrl)
-                .withMaxNumberOfMessages(1)
-
-        return receiveMessage(request)
-    }
-
     override fun receiveMessage(request: ReceiveMessageRequest): ReceiveMessageResult {
         val queue = get(request.queueUrl) ?: throw createQueueDoesNotExistException()
 
         val messages = queue.messages
                 .filter { it !in receipts.values }
-                .take(request.maxNumberOfMessages)
+                .take(request.maxNumberOfMessages ?: 1)
                 .map { message ->
                     val receiptHandle = UUID.randomUUID().toString()
                     receipts[receiptHandle] = message
@@ -186,8 +124,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
         return ReceiveMessageResult().withMessages(messages)
     }
 
-    // Delete Message
-
     override fun deleteMessage(request: DeleteMessageRequest): DeleteMessageResult {
         val message = receipts[request.receiptHandle] ?: throw createInvalidReceiptHandleException()
         val queue = get(request.queueUrl) ?: throw createQueueDoesNotExistException()
@@ -197,16 +133,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
         return DeleteMessageResult()
     }
-
-    override fun deleteMessage(queueUrl: String, receiptHandle: String): DeleteMessageResult {
-        val request = DeleteMessageRequest()
-                .withQueueUrl(queueUrl)
-                .withReceiptHandle(receiptHandle)
-
-        return deleteMessage(request)
-    }
-
-    // Delete Message Batch
 
     override fun deleteMessageBatch(request: DeleteMessageBatchRequest): DeleteMessageBatchResult {
         val queue = get(request.queueUrl) ?: throw createQueueDoesNotExistException()
@@ -235,16 +161,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
                 .withSuccessful(successes)
     }
 
-    override fun deleteMessageBatch(queueUrl: String, entries: List<DeleteMessageBatchRequestEntry>): DeleteMessageBatchResult {
-        val request = DeleteMessageBatchRequest()
-                .withQueueUrl(queueUrl)
-                .withEntries(entries)
-
-        return deleteMessageBatch(request)
-    }
-
-    // Change Message Visibility
-
     override fun changeMessageVisibility(request: ChangeMessageVisibilityRequest): ChangeMessageVisibilityResult {
         if (request.visibilityTimeout !in validVisibilityTimeouts) throw createInvalidVisibilityTimeoutException(request.visibilityTimeout)
 
@@ -258,17 +174,6 @@ class MockAmazonSQS: AbstractAmazonSQS() {
 
         return ChangeMessageVisibilityResult()
     }
-
-    override fun changeMessageVisibility(queueUrl: String, receiptHandle: String, visibilityTimeout: Int): ChangeMessageVisibilityResult {
-        val request = ChangeMessageVisibilityRequest()
-                .withQueueUrl(queueUrl)
-                .withReceiptHandle(receiptHandle)
-                .withVisibilityTimeout(visibilityTimeout)
-
-        return changeMessageVisibility(request)
-    }
-
-    // change message visibility batch
 
     override fun changeMessageVisibilityBatch(request: ChangeMessageVisibilityBatchRequest): ChangeMessageVisibilityBatchResult {
         if (request.entries.isEmpty()) throw createEmptyBatchException(ChangeMessageVisibilityBatchRequestEntry::class.java)
@@ -293,13 +198,5 @@ class MockAmazonSQS: AbstractAmazonSQS() {
         return ChangeMessageVisibilityBatchResult()
                 .withFailed(failures)
                 .withSuccessful(successes)
-    }
-
-    override fun changeMessageVisibilityBatch(queueUrl: String, entries: List<ChangeMessageVisibilityBatchRequestEntry>): ChangeMessageVisibilityBatchResult {
-        val request = ChangeMessageVisibilityBatchRequest()
-                .withQueueUrl(queueUrl)
-                .withEntries(entries)
-
-        return changeMessageVisibilityBatch(request)
     }
 }
