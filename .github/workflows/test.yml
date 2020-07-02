@@ -19,7 +19,7 @@ jobs:
           java-version: 11
 
       - name: Test
-        run: sh ./gradlew check jacocoTestReport
+        run: sh ./gradlew check codeCoverageReport
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v1
