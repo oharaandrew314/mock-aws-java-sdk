@@ -33,7 +33,7 @@ public class ImportantFileProcessor {
         this(AmazonS3ClientBuilder.defaultClient());
     }
 
-    public ImportantFileProcessor(AmazonS3Client s3Client) {
+    public ImportantFileProcessor(AmazonS3 s3Client) {
         this.s3Client = s3Client;
     }
 
