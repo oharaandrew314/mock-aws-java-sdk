@@ -9,9 +9,11 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
     private val tables = mutableSetOf<MockTable>()
 
-    private fun getTable(name: String) = tables.firstOrNull { name == it.name } ?: throw createResourceNotFound()
+    private fun getTable(name: String) = tables.firstOrNull { name == it.name } ?: throw createResourceNotFoundException()
 
     override fun createTable(request: CreateTableRequest): CreateTableResult {
+        if (tables.any { it.name == request.tableName }) throw createResourceInUseException(request.tableName)
+
         val table = MockTable(
                 name = request.tableName,
                 hashKeyType = request.keySchema.first(),
@@ -115,10 +117,17 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
         return DeleteTableResult()
     }
 
-    private fun createResourceNotFound() = ResourceNotFoundException("Requested resource not found").apply {
+    private fun createResourceNotFoundException() = ResourceNotFoundException("Requested resource not found").apply {
         requestId = UUID.randomUUID().toString()
         errorType = AmazonServiceException.ErrorType.Client
         errorCode = "ResourceNotFoundException"
+        statusCode = 400
+    }
+
+    private fun createResourceInUseException(tableName: String) = ResourceInUseException("Table already exists: $tableName").apply {
+        requestId = UUID.randomUUID().toString()
+        errorType = AmazonServiceException.ErrorType.Client
+        errorCode = "ResourceInUseException"
         statusCode = 400
     }
 }
