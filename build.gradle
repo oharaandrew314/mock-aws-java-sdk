@@ -22,9 +22,11 @@ dependencies {
 
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: ver.aws
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: ver.aws
 
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: ver.aws
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: ver.aws
+    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: ver.aws
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'org.assertj:assertj-core:3.13.2'

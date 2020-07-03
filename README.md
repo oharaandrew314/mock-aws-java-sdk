@@ -11,6 +11,8 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 None of the AWS SDKs are provided by this package.
 You must separately install each SDK you want to use; versions `1.11.300` and above are supported.
 
+Java 8 and 11 are officially supported.
+
 ## Install 
 
 Install the latest all-in-one package from Jitpack.
@@ -64,10 +66,11 @@ public class ImportantFileProcessorUnitTest {
 
 ## Supported Services
 
-| Service | Support | Mock Class |
-| ------- | ------- | ---------- |
-| S3 | Core Functionality Done | io.andrewohara.awsmock.s3.MockAmazonS3() |
-| SQS | Core Functionality Done | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
+| Service | Support | Interface | Mock Class |
+| ------- | ------- | --------- | ---------- |
+| S3 | Core Functionality | [AmazonS3](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html) | io.andrewohara.awsmock.s3.MockAmazonS3() |
+| SQS | Core Functionality | [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html) | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
+| Dynamo DB | Minimal Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockDynamoDB |
 
 ## Samples
 
