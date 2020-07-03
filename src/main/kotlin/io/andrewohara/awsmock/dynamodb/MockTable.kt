@@ -9,7 +9,7 @@ class MockTable(
         private val hashKeyType: KeySchemaElement,
         private val rangeKeyType: KeySchemaElement?
 ) {
-    private val items = mutableMapOf<Any, HashItems>()
+    private val hashes = mutableMapOf<AttributeValue, Hash>()
 
 
     fun save(item: MockItem) {
@@ -22,33 +22,41 @@ class MockTable(
 
     fun get(key: MockItem): MockItem? {
         val hashKey = key[hashKeyType.attributeName]!!  // TODO handle error
-        val hash = items[hashKey] ?: return null
+        val hash = hashes[hashKey] ?: return null
         return hash[key.getRangeKey()]
     }
 
     fun delete(key: MockItem): MockItem? {
         val hashKey = key[hashKeyType.attributeName]!!  // TODO handle error
-        val hash = items[hashKey] ?: return null
+        val hash = hashes[hashKey] ?: return null
 
         val item = hash[key.getRangeKey()] ?: return null
         hash.remove(key.getRangeKey())
         return item
     }
 
-    fun scan(filter: Map<String, Condition>?): List<MockItem> {
-        return items
-                .flatMap { it.value.values }
-                .filter { item ->
-                    filter == null || filter.all { (key, condition) -> item[key].compareWith(condition) }
-                }
+    fun scan(filter: Map<String, Condition>?): Collection<MockItem> {
+        return hashes.flatMap { it.value.query(filter) }
     }
 
-    private fun ensureHash(hashKey: AttributeValue): HashItems {
-        return if (items.containsKey(hashKey)) {
-            items.getValue(hashKey)
+    fun query(keys: Map<String, Condition>, filter: Map<String, Condition>?, scanIndexForward: Boolean): List<MockItem> {
+        val condition = keys.getValue(hashKeyType.attributeName)  //FIXME do the keyConditions always pertain only to the hash key?
+
+        val items = hashes
+                .filter { it.key.compareWith(condition) }
+                .flatMap { it.value.query(filter) }
+
+        if (rangeKeyType == null)   return items
+
+        return items.sortedWith(MockItemComparator(rangeKeyType, !scanIndexForward))
+    }
+
+    private fun ensureHash(hashKey: AttributeValue): Hash {
+        return if (hashes.containsKey(hashKey)) {
+            hashes.getValue(hashKey)
         } else {
-            val hash = HashItems()
-            items[hashKey] = hash
+            val hash = Hash()
+            hashes[hashKey] = hash
             hash
         }
     }
@@ -60,4 +68,9 @@ class MockTable(
     }
 }
 
-typealias HashItems = HashMap<AttributeValue?, MockItem>
+typealias Hash = HashMap<AttributeValue?, MockItem>
+
+fun Hash.query(filter: Map<String, Condition>?) = values
+        .filter { item ->
+            filter == null || filter.all { (key, condition) -> item[key].compareWith(condition) }
+        }

@@ -5,7 +5,7 @@ import org.junit.Test
 
 class ListTablesUnitTest {
 
-    private val client = MockDynamoDB()
+    private val client = MockAmazonDynamoDB()
 
     @Test
     fun `list tables when there are none`() {

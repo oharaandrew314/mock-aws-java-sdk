@@ -7,7 +7,7 @@ import org.junit.Test
 
 class CreateTableUnitTest {
 
-    private val client = MockDynamoDB()
+    private val client = MockAmazonDynamoDB()
 
     @Test
     fun `create table`() {

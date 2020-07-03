@@ -2,7 +2,9 @@ package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator.*
 import com.amazonaws.services.dynamodbv2.model.Condition
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement
 import java.lang.IllegalArgumentException
 import java.lang.UnsupportedOperationException
 
@@ -48,19 +50,27 @@ fun AttributeValue.startsWith(other: AttributeValue) = when {
     else  -> throw IllegalArgumentException() // TODO throw correct error
 }
 
-fun AttributeValue?.compareWith(condition: Condition) = when(condition.comparisonOperator) {
-    "NOT_NULL" -> this != null
-    "NULL" -> this == null
-    "GT" -> this != null && this > condition.attributeValueList.first()
-    "GE" -> this != null && this >= condition.attributeValueList.first()
-    "LT" -> this != null && this < condition.attributeValueList.first()
-    "LE" -> this != null && this <= condition.attributeValueList.first()
-    "NE" -> this != condition.attributeValueList.firstOrNull()
-    "EQ" -> this == condition.attributeValueList.firstOrNull()
-    "CONTAINS" -> this != null && condition.attributeValueList.any { it in this }
-    "NOT_CONTAINS" -> this != null && condition.attributeValueList.none { it in this }
-    "BEGINS_WITH" -> this != null && this.startsWith(condition.attributeValueList.first())
-    "IN" -> this != null && this in condition.attributeValueList
-    "BETWEEN" -> this != null && this <= condition.attributeValueList.first() && this >= condition.attributeValueList.last()
-    else -> throw IllegalArgumentException() // TODO throw correct error
+fun AttributeValue?.compareWith(condition: Condition) = when(fromValue(condition.comparisonOperator)!!) {
+    NOT_NULL     -> this != null
+    NULL         -> this == null
+    GT           -> this != null && this > condition.attributeValueList.first()
+    GE           -> this != null && this >= condition.attributeValueList.first()
+    LT           -> this != null && this < condition.attributeValueList.first()
+    LE           -> this != null && this <= condition.attributeValueList.first()
+    NE           -> this != condition.attributeValueList.firstOrNull()
+    EQ           -> this == condition.attributeValueList.firstOrNull()
+    CONTAINS     -> this != null && condition.attributeValueList.any { it in this }
+    NOT_CONTAINS -> this != null && condition.attributeValueList.none { it in this }
+    BEGINS_WITH  -> this != null && this.startsWith(condition.attributeValueList.first())
+    IN           -> this != null && this in condition.attributeValueList
+    BETWEEN      -> this != null && this <= condition.attributeValueList.first() && this >= condition.attributeValueList.last()
+}
+
+class MockItemComparator(private val rangeKey: KeySchemaElement, private val reverse: Boolean): Comparator<MockItem> {
+    override fun compare(i1: MockItem, i2: MockItem): Int {
+        val rangeKey1 = i1.getValue(rangeKey.attributeName)
+        val rangeKey2 = i2.getValue(rangeKey.attributeName)
+
+        return if (reverse) rangeKey2.compareTo(rangeKey1) else rangeKey1.compareTo(rangeKey2)
+    }
 }

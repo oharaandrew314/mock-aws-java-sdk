@@ -8,7 +8,7 @@ import org.junit.Test
 
 class GetItemUnitTest {
 
-    private val client = MockDynamoDB()
+    private val client = MockAmazonDynamoDB()
 
     @Test
     fun `get item from missing table`() {

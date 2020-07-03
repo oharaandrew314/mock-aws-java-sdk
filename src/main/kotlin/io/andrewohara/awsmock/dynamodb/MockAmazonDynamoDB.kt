@@ -5,7 +5,7 @@ import com.amazonaws.services.dynamodbv2.AbstractAmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
 import java.util.*
 
-class MockDynamoDB: AbstractAmazonDynamoDB() {
+class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
     private val tables = mutableSetOf<MockTable>()
 
@@ -96,6 +96,23 @@ class MockDynamoDB: AbstractAmazonDynamoDB() {
         return ScanResult()
                 .withCount(items.size)
                 .withItems(items)
+    }
+
+    override fun query(request: QueryRequest): QueryResult {
+        val table = getTable(request.tableName)
+
+        val items = table.query(request.keyConditions, request.queryFilter, request.isScanIndexForward)
+
+        return QueryResult()
+                .withCount(items.size)
+                .withItems(items)
+    }
+
+    override fun deleteTable(request: DeleteTableRequest): DeleteTableResult {
+        val table = getTable(request.tableName)
+        tables.remove(table)
+
+        return DeleteTableResult()
     }
 
     private fun createResourceNotFound() = ResourceNotFoundException("Requested resource not found").apply {
