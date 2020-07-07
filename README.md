@@ -85,6 +85,8 @@ public class QuickStartUnitTest {
 
 ## Samples
 
-There are a variety of sample projects available to help get you started.
+There are a variety of sample snippets available to help get you started.
 
-[Check out the samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
+[Check out the Kotlin Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
+
+[Check out the Java Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/java/io/andrewohara/awsmock/samples)
