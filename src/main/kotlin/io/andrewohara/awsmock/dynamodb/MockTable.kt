@@ -49,12 +49,8 @@ class MockTable(
         val hashKeyCondition = keys.getValue(hashKeyDef.attributeName)  //FIXME do the keyConditions always pertain only to the hash key?
 
         val filtered = items
-                .filter {
-                    val hashKey = it.hashKey()
-                    val match = hashKey.compareWith(hashKeyCondition)
-                    match
-                } // query on hash key
-                .filter(filter)
+                .filter { it.hashKey().compareWith(hashKeyCondition) } // query on hash key
+                .filter(filter) // filter on rest of conditions
 
         if (rangeKeyDef == null)   return filtered
 
