@@ -14,6 +14,11 @@ Java 8 and above
 None of the AWS SDKs are provided by this package.
 You must separately install each SDK you want to use; versions `1.11.300` and above are supported.
 
+## Gotchas
+
+- content-type cannot be inferred in file uploads on osx-java8 due to a [half-hearted JVM implementation](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
+
+
 ## Install 
 
 Install the latest all-in-one package from Jitpack.
