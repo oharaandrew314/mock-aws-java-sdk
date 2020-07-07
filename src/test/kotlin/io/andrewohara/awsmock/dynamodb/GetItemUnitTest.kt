@@ -2,7 +2,7 @@ package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
-import io.andrewohara.awsmock.dynamodb.DynamoAssertions.assertIsNotFound
+import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
 

@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.dynamodb.mapper
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.*
-import io.andrewohara.awsmock.dynamodb.DynamoAssertions.assertIsNotFound
+import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.DynamoCat
 import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
 import org.assertj.core.api.Assertions.*

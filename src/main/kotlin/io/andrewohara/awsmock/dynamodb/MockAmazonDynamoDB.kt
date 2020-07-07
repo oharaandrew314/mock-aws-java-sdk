@@ -16,8 +16,10 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
         val table = MockTable(
                 name = request.tableName,
-                hashKeyType = request.keySchema.first(),
-                rangeKeyType = request.keySchema.lastOrNull()
+                hashKeyDef = request.keySchema.first(),
+                hashKeyType = ScalarAttributeType.fromValue(request.attributeDefinitions.first().attributeType),
+                rangeKeyDef = request.keySchema.lastOrNull(),
+                rangeKeyType = ScalarAttributeType.fromValue(request.attributeDefinitions.last().attributeType)
         )
 
         tables.add(table)
@@ -103,7 +105,7 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
     override fun query(request: QueryRequest): QueryResult {
         val table = getTable(request.tableName)
 
-        val items = table.query(request.keyConditions, request.queryFilter, request.isScanIndexForward)
+        val items = table.query(request.keyConditions, request.queryFilter, request.isScanIndexForward ?: true)
 
         return QueryResult()
                 .withCount(items.size)

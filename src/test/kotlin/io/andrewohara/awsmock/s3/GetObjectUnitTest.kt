@@ -24,13 +24,13 @@ class GetObjectUnitTest {
 
     @Test
     fun `get object from missing bucket`() {
-        val exception = catchThrowableOfType({  testObj.getObject("missingBucket", "foo") }, AmazonS3Exception::class.java)
+        val exception = catchThrowableOfType({ testObj.getObject("missingBucket", "foo") }, AmazonS3Exception::class.java)
         exception.assertIsBucketNotFound()
     }
 
     @Test
     fun `get missing object`() {
-        val exception = catchThrowableOfType({  testObj.getObject(bucket.name, "foo") }, AmazonS3Exception::class.java)
+        val exception = catchThrowableOfType({ testObj.getObject(bucket.name, "foo") }, AmazonS3Exception::class.java)
         exception.assertIsNoSuchKey()
     }
 
@@ -40,7 +40,7 @@ class GetObjectUnitTest {
         dest.toFile().deleteOnExit()
         val request = GetObjectRequest(bucket.name, "foo")
 
-        val exception = catchThrowableOfType({  testObj.getObject(request, dest.toFile()) }, AmazonS3Exception::class.java)
+        val exception = catchThrowableOfType({ testObj.getObject(request, dest.toFile()) }, AmazonS3Exception::class.java)
         exception.assertIsNoSuchKey()
     }
 

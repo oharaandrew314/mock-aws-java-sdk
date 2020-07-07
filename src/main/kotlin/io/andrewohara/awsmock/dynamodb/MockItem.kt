@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator.*
 import com.amazonaws.services.dynamodbv2.model.Condition
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import java.lang.IllegalArgumentException
 import java.lang.UnsupportedOperationException
 
@@ -64,6 +65,13 @@ fun AttributeValue?.compareWith(condition: Condition) = when(fromValue(condition
     BEGINS_WITH  -> this != null && this.startsWith(condition.attributeValueList.first())
     IN           -> this != null && this in condition.attributeValueList
     BETWEEN      -> this != null && this <= condition.attributeValueList.first() && this >= condition.attributeValueList.last()
+}
+
+fun AttributeValue.type(): ScalarAttributeType = when {
+    s != null -> ScalarAttributeType.S
+    n != null -> ScalarAttributeType.N
+    b != null -> ScalarAttributeType.B
+    else -> throw IllegalArgumentException()
 }
 
 class MockItemComparator(private val rangeKey: KeySchemaElement, private val reverse: Boolean): Comparator<MockItem> {
