@@ -9,68 +9,59 @@ class MockTable(
         private val hashKeyType: KeySchemaElement,
         private val rangeKeyType: KeySchemaElement?
 ) {
-    private val hashes = mutableMapOf<AttributeValue, Hash>()
+    private val items = mutableListOf<MockItem>()
 
 
     fun save(item: MockItem) {
-        val hashKey = item[hashKeyType.attributeName]!!  // TODO handle error
-        val rangeKey = item.getRangeKey()
-
-        val hash = ensureHash(hashKey)
-        hash[rangeKey] = item
+        delete(item)
+        items.add(item)
     }
 
     fun get(key: MockItem): MockItem? {
-        val hashKey = key[hashKeyType.attributeName]!!  // TODO handle error
-        val hash = hashes[hashKey] ?: return null
-        return hash[key.getRangeKey()]
+        return items.firstOrNull { it.hashKey() == key.hashKey() && it.rangeKey() == key.rangeKey() }
     }
 
     fun delete(key: MockItem): MockItem? {
-        val hashKey = key[hashKeyType.attributeName]!!  // TODO handle error
-        val hash = hashes[hashKey] ?: return null
-
-        val item = hash[key.getRangeKey()] ?: return null
-        hash.remove(key.getRangeKey())
+        val item = get(key) ?: return null
+        items.remove(item)
         return item
     }
 
     fun scan(filter: Map<String, Condition>?): Collection<MockItem> {
-        return hashes.flatMap { it.value.query(filter) }
+        if (filter == null) return items
+
+        return items.filter(filter)
     }
 
     fun query(keys: Map<String, Condition>, filter: Map<String, Condition>?, scanIndexForward: Boolean): List<MockItem> {
-        val condition = keys.getValue(hashKeyType.attributeName)  //FIXME do the keyConditions always pertain only to the hash key?
+        val hashKeyCondition = keys.getValue(hashKeyType.attributeName)  //FIXME do the keyConditions always pertain only to the hash key?
 
-        val items = hashes
-                .filter { it.key.compareWith(condition) }
-                .flatMap { it.value.query(filter) }
+        val filtered = items
+                .filter {
+                    val hashKey = it.hashKey()
+                    val match = hashKey.compareWith(hashKeyCondition)
+                    match
+                } // query on hash key
+                .filter(filter)
 
-        if (rangeKeyType == null)   return items
+        if (rangeKeyType == null)   return filtered
 
-        return items.sortedWith(MockItemComparator(rangeKeyType, !scanIndexForward))
+        return filtered.sortedWith(MockItemComparator(rangeKeyType, !scanIndexForward))
     }
 
-    private fun ensureHash(hashKey: AttributeValue): Hash {
-        return if (hashes.containsKey(hashKey)) {
-            hashes.getValue(hashKey)
-        } else {
-            val hash = Hash()
-            hashes[hashKey] = hash
-            hash
-        }
-    }
+    private fun MockItem.hashKey(): AttributeValue = getValue(hashKeyType.attributeName)
 
-    private fun MockItem.getRangeKey(): AttributeValue? {
+    private fun MockItem.rangeKey(): AttributeValue? {
         if (rangeKeyType == null)   return null
 
         return getValue(rangeKeyType.attributeName)
     }
-}
 
-typealias Hash = HashMap<AttributeValue?, MockItem>
-
-fun Hash.query(filter: Map<String, Condition>?) = values
-        .filter { item ->
-            filter == null || filter.all { (key, condition) -> item[key].compareWith(condition) }
+    private fun List<MockItem>.filter(filter: Map<String, Condition>?): List<MockItem> {
+        return if (filter == null) {
+            this
+        } else {
+            filter { item -> filter.all { (key, condition) -> item[key].compareWith(condition) } }
         }
+    }
+}
