@@ -1,5 +1,6 @@
 ![Test](https://github.com/oharaandrew314/mock-aws-java-sdk/workflows/Test/badge.svg)
 [![codecov](https://codecov.io/gh/oharaandrew314/mock-aws-java-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/oharaandrew314/mock-aws-java-sdk)
+[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 # mock-aws-java-sdk
 
@@ -7,6 +8,8 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 
 
 ## Requirements
+
+Java 8 and above
 
 None of the AWS SDKs are provided by this package.
 You must separately install each SDK you want to use; versions `1.11.300` and above are supported.
