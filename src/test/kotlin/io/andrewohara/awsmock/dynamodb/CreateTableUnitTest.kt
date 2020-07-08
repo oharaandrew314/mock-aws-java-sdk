@@ -31,6 +31,16 @@ class CreateTableUnitTest {
         // TODO
     }
 
+    @Test
+    fun `create table with global indexes`() {
+        // TODO
+    }
+
+    @Test
+    fun `create table with local indexes`() {
+        // TODO
+    }
+
     private fun createDoggosTable() {
         client.createTable(
                 listOf(

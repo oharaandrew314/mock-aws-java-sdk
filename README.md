@@ -12,13 +12,6 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 - java 8 and above
 - aws-java-sdk-\<service\> of your choice as they are not provided by this package; versions `1.11.300` and above
 
-## Gotchas
-
-- content-type cannot be inferred in file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
-
-
-Java 8 and 11 are officially supported.
-
 ## Install 
 
 Install the latest all-in-one package from Jitpack.
@@ -31,8 +24,6 @@ Any well-designed class will let you inject its dependencies, so the same can ap
 Just modify them to accept an implementation of the AWS client interface, and then inject the mocked version during your tests.
 
 ```java
-// QuickStart.java
-
 public class QuickStart {
 
     private final AmazonS3 s3Client;
@@ -55,8 +46,6 @@ public class QuickStart {
 ```
 
 ```java
-// QuickStartUnitTest.java
-
 public class QuickStartUnitTest {
 
     private final AmazonS3 s3Client = new MockAmazonS3();
@@ -73,7 +62,7 @@ public class QuickStartUnitTest {
         final List<String> result = testObj.process();
 
         // verify result
-        Assertions.assertThat(result).containsExactly("special content", "secret content");
+        Assertions.assertThat(result).containsExactlyInAnyOrder("special content", "secret content");
     }
 }
 ```
@@ -88,11 +77,16 @@ public class QuickStartUnitTest {
 
 ## Samples
 
-There are some sample snippets available to help get you started.
+There are some [Sample Snippets](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
 
-[Kotlin Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
 
-[Java Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/java/io/andrewohara/awsmock/samples)
+
+## Gotchas
+
+- content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
+
+
+Java 8 and 11 are officially supported.
 
 ## Want to Help?
 

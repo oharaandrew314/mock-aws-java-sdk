@@ -23,6 +23,6 @@ public class QuickStartUnitTest {
         final List<String> result = testObj.process();
 
         // verify result
-        Assertions.assertThat(result).containsExactly("special content", "secret content");
+        Assertions.assertThat(result).containsExactlyInAnyOrder("special content", "secret content");
     }
 }

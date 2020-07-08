@@ -9,7 +9,8 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
     private val tables = mutableSetOf<MockTable>()
 
-    fun getTable(name: String) = tables.firstOrNull { name == it.name } ?: throw createResourceNotFoundException()
+    fun getTableOrNull(name: String) = tables.firstOrNull { name == it.name }
+    fun getTable(name: String) = getTableOrNull(name) ?: throw createResourceNotFoundException()
 
     override fun createTable(request: CreateTableRequest): CreateTableResult {
         if (tables.any { it.name == request.tableName }) throw createResourceInUseException(request.tableName)

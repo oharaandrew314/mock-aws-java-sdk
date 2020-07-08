@@ -43,7 +43,7 @@ data class MockTable(
         return items.filter(filter)
     }
 
-    fun query(keys: Map<String, Condition>, filter: Map<String, Condition>?, scanIndexForward: Boolean): List<MockItem> {
+    fun query(keys: Map<String, Condition>, filter: Map<String, Condition>, scanIndexForward: Boolean): List<MockItem> {
         val hashKeyCondition = keys.getValue(hashKeyDef.attributeName)  //FIXME do the keyConditions always pertain only to the hash key?
 
         val filtered = items
@@ -63,12 +63,8 @@ data class MockTable(
         return get(rangeKeyDef.attributeName)
     }
 
-    private fun List<MockItem>.filter(filter: Map<String, Condition>?): List<MockItem> {
-        return if (filter == null) {
-            this
-        } else {
-            filter { item -> filter.all { (key, condition) -> item[key].compareWith(condition) } }
-        }
+    private fun List<MockItem>.filter(filter: Map<String, Condition>): List<MockItem> {
+        return filter { item -> filter.all { (key, condition) -> item[key].compareWith(condition) } }
     }
 
     private fun createMissingKeyException(key: AttributeDefinition) = AmazonDynamoDBException("One or more parameter values were invalid: Missing the key ${key.attributeName} in the item").apply {
