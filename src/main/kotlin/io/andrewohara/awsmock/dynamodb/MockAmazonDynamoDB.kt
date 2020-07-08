@@ -9,19 +9,18 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
     private val tables = mutableSetOf<MockTable>()
 
-    private fun getTable(name: String) = tables.firstOrNull { name == it.name } ?: throw createResourceNotFoundException()
+    fun getTable(name: String) = tables.firstOrNull { name == it.name } ?: throw createResourceNotFoundException()
 
     override fun createTable(request: CreateTableRequest): CreateTableResult {
         if (tables.any { it.name == request.tableName }) throw createResourceInUseException(request.tableName)
 
-        val table = MockTable(
-                name = request.tableName,
-                hashKeyDef = request.keySchema.first(),
-                hashKeyType = ScalarAttributeType.fromValue(request.attributeDefinitions.first().attributeType),
-                rangeKeyDef = request.keySchema.lastOrNull(),
-                rangeKeyType = ScalarAttributeType.fromValue(request.attributeDefinitions.last().attributeType)
-        )
+        val hashKeySchema = request.keySchema.first { it.keyType == KeyType.HASH.toString() }
+        val hashKeyAttribute = request.attributeDefinitions.first { it.attributeName == hashKeySchema.attributeName }
 
+        val rangeKeySchema = request.keySchema.firstOrNull { it.keyType == KeyType.RANGE.toString() }
+        val rangeKeyAttribute = request.attributeDefinitions.firstOrNull { it.attributeName == rangeKeySchema?.attributeName }
+
+        val table = MockTable(name = request.tableName, hashKeyDef = hashKeyAttribute, rangeKeyDef = rangeKeyAttribute)
         tables.add(table)
 
         return CreateTableResult()
@@ -105,7 +104,11 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
     override fun query(request: QueryRequest): QueryResult {
         val table = getTable(request.tableName)
 
-        val items = table.query(request.keyConditions, request.queryFilter, request.isScanIndexForward ?: true)
+        val items = table.query(
+                keys = request.keyConditions ?: emptyMap(),
+                filter = request.queryFilter ?: emptyMap(),
+                scanIndexForward = request.isScanIndexForward ?: true
+        )
 
         return QueryResult()
                 .withCount(items.size)

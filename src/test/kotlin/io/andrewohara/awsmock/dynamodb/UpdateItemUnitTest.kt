@@ -1,5 +1,6 @@
 package io.andrewohara.awsmock.dynamodb
 
-class DeleteTableUnitTest {
+class UpdateItemUnitTest {
+
     // TODO
 }

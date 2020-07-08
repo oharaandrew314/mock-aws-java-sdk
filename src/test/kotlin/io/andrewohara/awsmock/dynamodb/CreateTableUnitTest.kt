@@ -26,6 +26,11 @@ class CreateTableUnitTest {
         exception.assertTableInUse("doggos")
     }
 
+    @Test
+    fun `create table where key schema doesn't have associated AttributeSchema`() {
+        // TODO
+    }
+
     private fun createDoggosTable() {
         client.createTable(
                 listOf(

@@ -88,8 +88,16 @@ public class QuickStartUnitTest {
 
 ## Samples
 
-There are a variety of sample snippets available to help get you started.
+There are some sample snippets available to help get you started.
 
-[Check out the Kotlin Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
+[Kotlin Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples)
 
-[Check out the Java Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/java/io/andrewohara/awsmock/samples)
+[Java Samples](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/java/io/andrewohara/awsmock/samples)
+
+## Want to Help?
+
+You can:
+
+- submit issues for errors that don't match what AWS would return
+- Submit a PR to increase the level of implementation for the currently supported services
+- submit a PR for a new supported service

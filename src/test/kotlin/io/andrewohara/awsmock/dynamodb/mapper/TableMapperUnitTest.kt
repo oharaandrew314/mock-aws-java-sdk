@@ -18,18 +18,7 @@ class TableMapperUnitTest {
 
     @Before
     fun setup() {
-        mapper.createTableIfNotExists(ProvisionedThroughput(1, 1))
-    }
-
-    @After
-    fun tearDown() {
-        try {
-            for (item in mapper.scan(DynamoDBScanExpression())) {
-                mapper.delete(item)
-            }
-        } catch (e: ResourceNotFoundException) {
-            // no-op
-        }
+        mapper.createTable(ProvisionedThroughput(1, 1))
     }
 
     @Test

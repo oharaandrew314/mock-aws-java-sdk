@@ -3,26 +3,24 @@ package io.andrewohara.awsmock.dynamodb
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.Condition
-import com.amazonaws.services.dynamodbv2.model.KeySchemaElement
 import com.amazonaws.services.dynamodbv2.model.*
 import java.util.*
 
-class MockTable(
+data class MockTable(
         val name: String,
-        private val hashKeyDef: KeySchemaElement,
-        private val hashKeyType: ScalarAttributeType,
-        private val rangeKeyDef: KeySchemaElement?,
-        private val rangeKeyType: ScalarAttributeType?
+        private val hashKeyDef: AttributeDefinition,
+        private val rangeKeyDef: AttributeDefinition?
 ) {
-    private val items = mutableListOf<MockItem>()
+    val items = mutableListOf<MockItem>()
 
     fun save(item: MockItem) {
+
         val hashKey = item.hashKey() ?: throw createMissingKeyException(hashKeyDef)
-        if (hashKeyType != hashKey.type()) throw createMismatchedKeyException(hashKeyDef.attributeName, hashKeyType, hashKey.type())
+        if (hashKeyDef.type() != hashKey.dataType()) throw createMismatchedKeyException(hashKeyDef, hashKey.dataType())
 
         if (rangeKeyDef != null) {
             val rangeKey = item.rangeKey() ?: throw createMissingKeyException(rangeKeyDef)
-            if (rangeKeyType != rangeKey.type()) throw createMismatchedKeyException(rangeKeyDef.attributeName, rangeKeyType!!, rangeKey.type())
+            if (rangeKeyDef.type() != rangeKey.dataType()) throw createMismatchedKeyException(rangeKeyDef, rangeKey.dataType())
         }
 
         delete(item)
@@ -73,17 +71,19 @@ class MockTable(
         }
     }
 
-    private fun createMissingKeyException(key: KeySchemaElement) = AmazonDynamoDBException("One or more parameter values were invalid: Missing the key ${key.attributeName} in the item").apply {
+    private fun createMissingKeyException(key: AttributeDefinition) = AmazonDynamoDBException("One or more parameter values were invalid: Missing the key ${key.attributeName} in the item").apply {
         requestId = UUID.randomUUID().toString()
         errorType = AmazonServiceException.ErrorType.Client
         errorCode = "ValidationException"
         statusCode = 400
     }
 
-    private fun createMismatchedKeyException(key: String, expected: ScalarAttributeType, actual: ScalarAttributeType) = AmazonDynamoDBException("One or more parameter values were invalid: Type mismatch for key $key expected: $expected actual: $actual").apply {
+    private fun createMismatchedKeyException(key: AttributeDefinition, actual: ScalarAttributeType) = AmazonDynamoDBException("One or more parameter values were invalid: Type mismatch for key ${key.attributeName} expected: ${key.attributeType} actual: $actual").apply {
         requestId = UUID.randomUUID().toString()
         errorType = AmazonServiceException.ErrorType.Client
         errorCode = "ValidationException"
         statusCode = 400
     }
 }
+
+private fun AttributeDefinition.type() = ScalarAttributeType.fromValue(attributeType)

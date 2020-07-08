@@ -31,7 +31,7 @@ object CatsFixtures {
         )
     }
 
-    val smokey = mapOf("ownerId" to AttributeValue().withN("1"), "name" to AttributeValue("Smokey"))
-    val bandit = mapOf("ownerId" to AttributeValue().withN("1"), "name" to AttributeValue("Bandit"))
-    val toggles = mapOf("ownerId" to AttributeValue().withN("2"), "name" to AttributeValue("Toggles"))
+    val smokey = mapOf("ownerId" to AttributeValue().withN("1"), "name" to AttributeValue("Smokey"), "gender" to AttributeValue("female"))
+    val bandit = mapOf("ownerId" to AttributeValue().withN("1"), "name" to AttributeValue("Bandit"), "gender" to AttributeValue("male"))
+    val toggles = mapOf("ownerId" to AttributeValue().withN("2"), "name" to AttributeValue("Toggles"), "gender" to AttributeValue("female"))
 }
