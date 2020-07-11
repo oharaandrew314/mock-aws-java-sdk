@@ -21,7 +21,7 @@ Install the latest all-in-one package from Jitpack.
 ## QuickStart
 
 Any well-designed class will let you inject its dependencies, so the same can apply to your AWS mediators.
-Just modify them to accept an implementation of the AWS client interface, and then inject the mocked version during your tests.
+Just inject the provided mocks into your business logic, then unit-test them as if they were connected to AWS. 
 
 ```java
 public class QuickStart {
