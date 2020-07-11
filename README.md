@@ -69,8 +69,8 @@ public class QuickStartUnitTest {
 
 ## Supported Services
 
-| Service | Support | Interface | Mock Class |
-| ------- | ------- | --------- | ---------- |
+| Service | Support | Interface | Mock Implementation |
+| ------- | ------- | --------- | ------------------- |
 | S3 | Core Functionality | [AmazonS3](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html) | io.andrewohara.awsmock.s3.MockAmazonS3() |
 | SQS | Core Functionality | [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html) | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
 | Dynamo DB | Minimal Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
@@ -78,7 +78,6 @@ public class QuickStartUnitTest {
 ## Samples
 
 There are some [Sample Snippets](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
-
 
 
 ## Gotchas
