@@ -14,9 +14,11 @@ object CatsFixtures {
     val ownerIdAttribute = AttributeDefinition("ownerId", ScalarAttributeType.N)
     val nameAttribute = AttributeDefinition("name", ScalarAttributeType.S)
 
+    val togglesKey = mapOf("ownerId" to attributeValue(2), "name" to AttributeValue("Toggles"))
+
     val smokey = mapOf("ownerId" to attributeValue(1), "name" to AttributeValue("Smokey"), "gender" to AttributeValue("female"))
     val bandit = mapOf("ownerId" to attributeValue(1), "name" to AttributeValue("Bandit"), "gender" to AttributeValue("male"))
-    val toggles = mapOf("ownerId" to attributeValue(2), "name" to AttributeValue("Toggles"), "gender" to AttributeValue("female"))
+    val toggles = togglesKey + mapOf("gender" to AttributeValue("female"))
 
     fun createTable(client: AmazonDynamoDB) {
         mapper(client).createTable(ProvisionedThroughput(1, 1))

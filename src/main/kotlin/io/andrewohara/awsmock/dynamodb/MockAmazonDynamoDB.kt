@@ -96,7 +96,9 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
         val item = (table.get(request.key) ?: request.key).toMutableMap()
         val updated = item.update(request.attributeUpdates)
-        table.save(updated)
+        if (item != updated) {
+            table.save(updated)
+        }
 
         return UpdateItemResult()
     }

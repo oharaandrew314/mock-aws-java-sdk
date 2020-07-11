@@ -12,8 +12,10 @@ object OwnersFixtures {
 
     const val tableName = "owners"
 
-    val parents = mapOf("ownerId" to attributeValue(1), "name" to AttributeValue("Parents"))
-    val me = mapOf("ownerId" to attributeValue(2), "name" to AttributeValue("Me"))
+    val meKey = mapOf("ownerId" to attributeValue(2))
+
+    val parents = mapOf("ownerId" to attributeValue(1), "name" to AttributeValue("Parents"), "pets" to attributeValue(2))
+    val me = meKey + mapOf("name" to AttributeValue("Me"), "pets" to attributeValue(1))
 
     fun createTable(client: AmazonDynamoDB) {
         mapper(client).createTable(ProvisionedThroughput(1, 1))

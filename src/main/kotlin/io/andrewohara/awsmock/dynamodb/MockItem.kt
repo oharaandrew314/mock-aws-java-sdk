@@ -7,13 +7,24 @@ import java.lang.UnsupportedOperationException
 
 typealias MockItem = Map<String, AttributeValue>
 
+/**
+ * TODO this needs to be further implemented
+ * e.g. for set types
+ */
 fun MockItem.update(updates: Map<String, AttributeValueUpdate>): MockItem {
     val toUpdate = toMutableMap()
     for ((key, value) in updates) {
         when(value.action) {
-            "ADD" -> TODO()
+            "ADD" -> {
+                val attr = toUpdate.getValue(key)
+                if (attr.dataType() != ScalarAttributeType.N) throw IllegalArgumentException("target attribute must be N") // TODO throw correct error
+                if (value.value.dataType() != attr.dataType()) throw IllegalArgumentException("update attribute doesn't match target attribute")  // TODO throw correct error
+                attr.n = attr.n.toBigDecimal().plus(value.value.n.toBigDecimal()).toString()
+            }
             "PUT" -> toUpdate[key] = value.value
-            "DELETE" -> toUpdate.remove(key)
+            "DELETE" -> {
+                toUpdate.remove(key)
+            }
         }
     }
     return toUpdate

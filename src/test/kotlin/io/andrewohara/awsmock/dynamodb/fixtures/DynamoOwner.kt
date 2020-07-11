@@ -11,7 +11,9 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 data class DynamoOwner(
         @DynamoDBHashKey var ownerId: Int? = null,
 
-        var name: String? = null
+        var name: String? = null,
+
+        var pets: Int? = null
 ) {
     companion object {
         const val tableName = "cats"
