@@ -88,12 +88,13 @@ To that end, this tool provides you with select implementations of AWS client in
 When you inject these mocks into your business logic during tests, the commands will bypass AWS and be handled by custom, in-memory implementations.
 
 Since only the low-level client interfaces are mocked, the Dynamo DB Document and Mapper clients will work as long as they are initialized with the mock.
-You can see it in action in [this sample](https://github.com/oharaandrew314/mock-aws-java-sdk/blob/master/src/test/kotlin/io/andrewohara/awsmock/samples/dynamodb/DynamoCatsDao.kt#L13-L17). 
+You can see it in action in [this sample](https://github.com/oharaandrew314/mock-aws-java-sdk/blob/master/src/test/kotlin/io/andrewohara/awsmock/samples/dynamodbmapper/DynamoCatsDao.kt#L13-L17). 
 
 ## Gotchas
 
 - content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
-- Dynamo DB query expressions are not supported (conditions will work)
+- Dynamo DB query expressions not supported (conditions will work)
+- Dynamo DB isn't emulated nearly as well as Dynamo DB Local, but you may find the simplicity of this tool to be worth it
 
 ## Want to Help?
 

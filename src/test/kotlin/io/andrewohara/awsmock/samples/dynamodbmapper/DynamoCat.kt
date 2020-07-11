@@ -1,4 +1,4 @@
-package io.andrewohara.awsmock.samples.dynamodb
+package io.andrewohara.awsmock.samples.dynamodbmapper
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey

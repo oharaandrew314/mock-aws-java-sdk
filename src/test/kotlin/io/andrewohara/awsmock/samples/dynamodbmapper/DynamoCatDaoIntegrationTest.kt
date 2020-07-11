@@ -1,4 +1,4 @@
-package io.andrewohara.awsmock.samples.dynamodb
+package io.andrewohara.awsmock.samples.dynamodbmapper
 
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
