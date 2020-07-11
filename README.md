@@ -73,7 +73,7 @@ public class QuickStartUnitTest {
 | ------- | ------- | --------- | ------------------- |
 | S3 | Core Functionality | [AmazonS3](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html) | io.andrewohara.awsmock.s3.MockAmazonS3() |
 | SQS | Core Functionality | [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html) | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
-| Dynamo DB | Minimal Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
+| Dynamo DB | Core Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
 
 ## Samples
 

@@ -1,13 +1,11 @@
 package io.andrewohara.awsmock.dynamodb
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.TestUtils.attributeValue
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import io.andrewohara.awsmock.dynamodb.fixtures.OwnersFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
@@ -62,7 +60,10 @@ class UpdateItemUnitTest {
 
         client.updateItem(request)
 
-        assertThat(client.getItem("cats", CatsFixtures.togglesKey).item).isEqualTo(CatsFixtures.togglesKey)
+        val expected = CatsFixtures.toggles.toMutableMap()
+        expected.remove("gender")
+
+        assertThat(client.getItem("cats", CatsFixtures.togglesKey).item).isEqualTo(expected)
     }
 
     @Test

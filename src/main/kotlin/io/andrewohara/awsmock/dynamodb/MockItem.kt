@@ -32,7 +32,7 @@ fun MockItem.update(updates: Map<String, AttributeValueUpdate>): MockItem {
 
 operator fun AttributeValue.compareTo(other: AttributeValue) = when {
     s != null -> s.compareTo(other.s)
-    n != null -> n.compareTo(other.n)
+    n != null -> n.toBigDecimal().compareTo(other.n.toBigDecimal())
     b != null -> b.compareTo(other.b)
     else -> throw IllegalArgumentException() // TODO throw correct error
 }
@@ -45,12 +45,12 @@ operator fun AttributeValue.contains(other: AttributeValue) = when {
     else -> throw IllegalArgumentException() // TODO throw correct error
 }
 
-operator fun AttributeValue.contains(others: Collection<AttributeValue>) = when {
-    s != null -> others.any { it.s == s }
-    n != null -> others.any { it.n == n }
-    b != null -> others.any { it.b == b }
-    else -> throw IllegalArgumentException() // TODO throw correct error
-}
+//operator fun AttributeValue.contains(others: Collection<AttributeValue>) = when {
+//    s != null -> others.any { it.s == s }
+//    n != null -> others.any { it.n == n }
+//    b != null -> others.any { it.b == b }
+//    else -> throw IllegalArgumentException() // TODO throw correct error
+//}
 
 fun AttributeValue.startsWith(other: AttributeValue) = when {
     s != null -> s.startsWith(other.s)
@@ -71,7 +71,7 @@ fun AttributeValue?.compareWith(condition: Condition) = when(fromValue(condition
     NOT_CONTAINS -> this != null && condition.attributeValueList.none { it in this }
     BEGINS_WITH  -> this != null && this.startsWith(condition.attributeValueList.first())
     IN           -> this != null && this in condition.attributeValueList
-    BETWEEN      -> this != null && this <= condition.attributeValueList.first() && this >= condition.attributeValueList.last()
+    BETWEEN      -> this != null && this >= condition.attributeValueList.first() && this <= condition.attributeValueList.last()
 }
 
 fun AttributeValue.dataType(): ScalarAttributeType = when {

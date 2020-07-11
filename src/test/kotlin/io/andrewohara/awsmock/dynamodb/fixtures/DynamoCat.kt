@@ -12,5 +12,8 @@ data class DynamoCat(
         var name: String? = null,
 
         @DynamoDBIndexRangeKey(localSecondaryIndexName = "genders")
-        var gender: String? = null
+        var gender: String? = null,
+
+        var features: Set<String> = emptySet(),
+        var visitDates: Set<Int> = emptySet()
 )
