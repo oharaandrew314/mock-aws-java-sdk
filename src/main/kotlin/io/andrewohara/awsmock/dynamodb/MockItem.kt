@@ -58,20 +58,26 @@ fun AttributeValue.startsWith(other: AttributeValue) = when {
     else  -> throw IllegalArgumentException() // TODO throw correct error
 }
 
-fun AttributeValue?.compareWith(condition: Condition) = when(fromValue(condition.comparisonOperator)!!) {
-    NOT_NULL     -> this != null
-    NULL         -> this == null
-    GT           -> this != null && this > condition.attributeValueList.first()
-    GE           -> this != null && this >= condition.attributeValueList.first()
-    LT           -> this != null && this < condition.attributeValueList.first()
-    LE           -> this != null && this <= condition.attributeValueList.first()
-    NE           -> this != condition.attributeValueList.firstOrNull()
-    EQ           -> this == condition.attributeValueList.firstOrNull()
-    CONTAINS     -> this != null && condition.attributeValueList.any { it in this }
-    NOT_CONTAINS -> this != null && condition.attributeValueList.none { it in this }
-    BEGINS_WITH  -> this != null && this.startsWith(condition.attributeValueList.first())
-    IN           -> this != null && this in condition.attributeValueList
-    BETWEEN      -> this != null && this >= condition.attributeValueList.first() && this <= condition.attributeValueList.last()
+fun AttributeValue?.compareWith(condition: Condition): Boolean {
+    if (this == null) {
+        return fromValue(condition.comparisonOperator) == NULL
+    }
+
+    return when (fromValue(condition.comparisonOperator)!!) {
+        NOT_NULL -> true
+        NULL -> false
+        GT -> this > condition.attributeValueList.first()
+        GE -> this >= condition.attributeValueList.first()
+        LT -> this < condition.attributeValueList.first()
+        LE -> this <= condition.attributeValueList.first()
+        NE -> this != condition.attributeValueList.firstOrNull()
+        EQ -> this == condition.attributeValueList.firstOrNull()
+        CONTAINS -> condition.attributeValueList.any { it in this }
+        NOT_CONTAINS -> condition.attributeValueList.none { it in this }
+        BEGINS_WITH -> this.startsWith(condition.attributeValueList.first())
+        IN -> this in condition.attributeValueList
+        BETWEEN -> this >= condition.attributeValueList.first() && this <= condition.attributeValueList.last()
+    }
 }
 
 fun AttributeValue.dataType(): ScalarAttributeType = when {
