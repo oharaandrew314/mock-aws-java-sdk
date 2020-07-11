@@ -4,6 +4,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTableMapper
 
@@ -12,7 +13,7 @@ class DynamoCatsDao(tableName: String, client: AmazonDynamoDB? = null) {
     val mapper: DynamoDBTableMapper<DynamoCat, Int, String> = DynamoDBMapper(
                     client ?: AmazonDynamoDBClientBuilder.defaultClient(),
                     DynamoDBMapperConfig.Builder()
-                            .withTableNameOverride(DynamoDBMapperConfig.TableNameOverride(tableName))
+                            .withTableNameOverride(TableNameOverride(tableName))
                             .build()
             )
             .newTableMapper(DynamoCat::class.java)

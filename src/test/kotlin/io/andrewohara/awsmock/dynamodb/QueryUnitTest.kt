@@ -3,6 +3,8 @@ package io.andrewohara.awsmock.dynamodb
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.TestUtils.eq
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
+import io.andrewohara.awsmock.dynamodb.fixtures.OwnersFixtures
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
 
@@ -26,7 +28,7 @@ class QueryUnitTest {
 
     @Test
     fun `query empty table`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         val request = QueryRequest()
                 .withTableName(CatsFixtures.tableName)
@@ -39,24 +41,23 @@ class QueryUnitTest {
 
     @Test
     fun `query table without sort key`() {
-        CatsFixtures.createCatsTableByName(client)
+        OwnersFixtures.createTable(client)
 
-        client.putItem(CatsFixtures.tableName, CatsFixtures.smokey)
-        client.putItem(CatsFixtures.tableName, CatsFixtures.bandit)
-        client.putItem(CatsFixtures.tableName, CatsFixtures.toggles)
+        client.putItem(OwnersFixtures.tableName, OwnersFixtures.parents)
+        client.putItem(OwnersFixtures.tableName, OwnersFixtures.me)
 
         val request = QueryRequest()
-                .withTableName(CatsFixtures.tableName)
-                .withKeyConditions(mapOf("name" to Condition().eq("Toggles")))
+                .withTableName(OwnersFixtures.tableName)
+                .withKeyConditions(mapOf("ownerId" to Condition().eq(1)))
         val result = client.query(request)
 
         assertThat(result.count).isEqualTo(1)
-        assertThat(result.items).containsExactly(CatsFixtures.toggles)
+        assertThat(result.items).containsExactly(OwnersFixtures.parents)
     }
 
     @Test
     fun `query table with sort key`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         client.putItem(CatsFixtures.tableName, CatsFixtures.smokey)
         client.putItem(CatsFixtures.tableName, CatsFixtures.bandit)

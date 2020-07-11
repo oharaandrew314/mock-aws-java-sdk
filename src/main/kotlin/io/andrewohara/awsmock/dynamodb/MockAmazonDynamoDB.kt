@@ -44,14 +44,8 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
     }
 
     override fun batchWriteItem(request: BatchWriteItemRequest): BatchWriteItemResult {
-        val unprocessed = mutableMapOf<String, List<WriteRequest>>()
-
         for ((tableName, requestEntries) in request.requestItems) {
-            val table = tables.firstOrNull { tableName == it.name }
-            if (table == null) {
-                unprocessed[tableName] = requestEntries
-                continue
-            }
+            val table = tables.firstOrNull { tableName == it.name } ?: throw createResourceNotFoundException()
 
             for (requestEntry in requestEntries) {
                 requestEntry.deleteRequest?.let {
@@ -63,7 +57,7 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
             }
         }
 
-        return BatchWriteItemResult().withUnprocessedItems(unprocessed)
+        return BatchWriteItemResult().withUnprocessedItems(emptyMap())
     }
 
     override fun updateItem(request: UpdateItemRequest): UpdateItemResult {
@@ -114,6 +108,27 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
         return QueryResult()
                 .withCount(items.size)
                 .withItems(items)
+    }
+
+    override fun batchGetItem(request: BatchGetItemRequest): BatchGetItemResult {
+        val results: Map<String, MutableList<MockItem>> = request.requestItems
+                .map { it.key to mutableListOf<MockItem>() }
+                .toMap()
+
+        for ((tableName, requestEntries) in request.requestItems) {
+            val table = tables.firstOrNull { tableName == it.name } ?: throw createResourceNotFoundException()
+
+            for (key in requestEntries.keys) {
+                val item = table.get(key)
+                if (item != null) {
+                    results.getValue(tableName).add(item)
+                }
+            }
+        }
+
+        return BatchGetItemResult()
+                .withResponses(results)
+                .withUnprocessedKeys(emptyMap())
     }
 
     override fun deleteTable(request: DeleteTableRequest): DeleteTableResult {

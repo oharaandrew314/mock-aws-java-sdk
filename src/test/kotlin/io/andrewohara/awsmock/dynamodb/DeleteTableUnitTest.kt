@@ -2,6 +2,7 @@ package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
 
@@ -11,7 +12,7 @@ class DeleteTableUnitTest {
 
     @Test
     fun `delete table`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         client.deleteTable(CatsFixtures.tableName)
 

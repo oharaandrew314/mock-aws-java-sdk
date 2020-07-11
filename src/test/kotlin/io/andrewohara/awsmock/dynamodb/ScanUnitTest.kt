@@ -1,21 +1,28 @@
 package io.andrewohara.awsmock.dynamodb
 
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.Condition
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.TestUtils.eq
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
+import io.andrewohara.awsmock.samples.sqs.Cat
 import org.assertj.core.api.Assertions.*
+import org.junit.Before
 import org.junit.Test
 
 class ScanUnitTest {
 
     private val client = MockAmazonDynamoDB()
 
+    @Before
+    fun setup() {
+        CatsFixtures.createTable(client)
+    }
+
     @Test
     fun `scan missing table`() {
         val exception = catchThrowableOfType(
-                { client.scan(CatsFixtures.tableName, emptyMap()) },
+                { client.scan("missingTable", emptyMap()) },
                 ResourceNotFoundException::class.java
         )
 
@@ -24,8 +31,6 @@ class ScanUnitTest {
 
     @Test
     fun `scan empty`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
-
         val result = client.scan(CatsFixtures.tableName, emptyMap())
 
         assertThat(result.count).isEqualTo(0)
@@ -34,8 +39,6 @@ class ScanUnitTest {
 
     @Test
     fun `scan with no filter`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
-
         client.putItem(CatsFixtures.tableName, CatsFixtures.toggles)
         client.putItem(CatsFixtures.tableName, CatsFixtures.smokey)
 
@@ -47,8 +50,6 @@ class ScanUnitTest {
 
     @Test
     fun `scan with filter`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
-
         client.putItem(CatsFixtures.tableName, CatsFixtures.toggles)
         client.putItem(CatsFixtures.tableName, CatsFixtures.smokey)
         client.putItem(CatsFixtures.tableName, CatsFixtures.bandit)

@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsMismatchedKey
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsMissingKey
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
 
@@ -14,7 +15,7 @@ class PutItemUnitTest {
 
     @Test
     fun `put item with missing hash key`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         val item = mapOf("foo" to AttributeValue("bar"))
         val exception = catchThrowableOfType({ client.putItem(CatsFixtures.tableName, item) }, AmazonDynamoDBException::class.java)
@@ -24,7 +25,7 @@ class PutItemUnitTest {
 
     @Test
     fun `put item with missing range key`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         val item = mapOf("ownerId" to AttributeValue().withN("1"))
         val exception = catchThrowableOfType({ client.putItem(CatsFixtures.tableName, item) }, AmazonDynamoDBException::class.java)
@@ -34,7 +35,7 @@ class PutItemUnitTest {
 
     @Test
     fun `put item with hash key that doesn't match data type of schema`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         val item = mapOf("ownerId" to AttributeValue("1"), "name" to AttributeValue("Toggles"))
         val exception = catchThrowableOfType({ client.putItem(CatsFixtures.tableName, item) }, AmazonDynamoDBException::class.java)
@@ -44,7 +45,7 @@ class PutItemUnitTest {
 
     @Test
     fun `put item with range key that doesn't match data type of schema`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         val item = mapOf("ownerId" to AttributeValue().withN("1"), "name" to AttributeValue().withN("2"))
         val exception = catchThrowableOfType({ client.putItem(CatsFixtures.tableName, item) }, AmazonDynamoDBException::class.java)
@@ -54,7 +55,7 @@ class PutItemUnitTest {
 
     @Test
     fun `put item`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
+        CatsFixtures.createTable(client)
 
         client.putItem(CatsFixtures.tableName, CatsFixtures.toggles)
 

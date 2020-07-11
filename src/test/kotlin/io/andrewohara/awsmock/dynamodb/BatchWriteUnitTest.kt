@@ -1,31 +1,46 @@
 package io.andrewohara.awsmock.dynamodb
 
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.DeleteRequest
 import com.amazonaws.services.dynamodbv2.model.PutRequest
+import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import com.amazonaws.services.dynamodbv2.model.WriteRequest
+import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 class BatchWriteUnitTest {
 
     private val client = MockAmazonDynamoDB()
 
+    @Before
+    fun setup() {
+        CatsFixtures.createTable(client)
+    }
+
+    @After
+    fun tearDown() {
+        val mapper = CatsFixtures.mapper(client)
+        for (item in mapper.scan(DynamoDBScanExpression())) {
+            mapper.delete(item)
+        }
+    }
+
     @Test
     fun `batch write to missing table`() {
-        val request = mapOf(CatsFixtures.tableName to listOf(
+        val request = mapOf("missingTable" to listOf(
                 WriteRequest(PutRequest(CatsFixtures.toggles))
         ))
 
-        val result = client.batchWriteItem(request)
-
-        assertThat(result.unprocessedItems).isEqualTo(request)
+        val exception = catchThrowableOfType({ client.batchWriteItem(request) }, ResourceNotFoundException::class.java)
+        exception.assertIsNotFound()
     }
 
     @Test
     fun `batch write new items`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
-
         val request = mapOf(CatsFixtures.tableName to listOf(
                 WriteRequest(PutRequest(CatsFixtures.toggles)),
                 WriteRequest(PutRequest(CatsFixtures.bandit))
@@ -38,7 +53,6 @@ class BatchWriteUnitTest {
 
     @Test
     fun `batch write for existing item`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
         client.putItem(CatsFixtures.tableName, CatsFixtures.toggles)
 
         val request = mapOf(CatsFixtures.tableName to listOf(
@@ -46,12 +60,11 @@ class BatchWriteUnitTest {
         ))
         val result = client.batchWriteItem(request)
 
-        assertThat(result.unprocessedItems).isEqualTo(request)  // TODO find out if this is true
+        assertThat(result.unprocessedItems).isEmpty()
     }
 
     @Test
     fun `batch write items to delete`() {
-        CatsFixtures.createCatsTableByOwnerIdAndName(client)
         client.putItem(CatsFixtures.tableName, CatsFixtures.toggles)
 
         val request = mapOf(CatsFixtures.tableName to listOf(

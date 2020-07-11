@@ -1,15 +1,17 @@
-package io.andrewohara.awsmock.dynamodb
+package io.andrewohara.awsmock.dynamodb.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.datamodeling.*
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTableMapper
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 
-@DynamoDBTable(tableName = "cats")
-data class DynamoCat(
-    @DynamoDBHashKey var ownerId: Int? = null,
-    @DynamoDBRangeKey var catName: String? = null,
+@DynamoDBDocument
+data class DynamoOwner(
+        @DynamoDBHashKey var ownerId: Int? = null,
 
-    var gender: String? = null
+        var name: String? = null
 ) {
     companion object {
         const val tableName = "cats"

@@ -41,4 +41,6 @@ object TestUtils {
     fun Condition.eq(value: String): Condition = this
             .withComparisonOperator(ComparisonOperator.EQ)
             .withAttributeValueList(AttributeValue(value))
+
+    fun attributeValue(value: Int) = AttributeValue().withN(value.toString())
 }

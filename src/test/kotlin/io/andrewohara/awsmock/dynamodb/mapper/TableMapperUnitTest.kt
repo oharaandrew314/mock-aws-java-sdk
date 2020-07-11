@@ -4,17 +4,17 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
-import io.andrewohara.awsmock.dynamodb.DynamoCat
+import io.andrewohara.awsmock.dynamodb.fixtures.DynamoCat
 import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 class TableMapperUnitTest {
 
     private val client = MockAmazonDynamoDB()
-    private val mapper = DynamoCat.mapper(client)
+    private val mapper = CatsFixtures.mapper(client)
 
     @Before
     fun setup() {

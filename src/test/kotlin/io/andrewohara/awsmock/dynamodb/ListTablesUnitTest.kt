@@ -1,5 +1,6 @@
 package io.andrewohara.awsmock.dynamodb
 
+import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
 
@@ -14,7 +15,7 @@ class ListTablesUnitTest {
 
     @Test
     fun `list tables`() {
-        DynamoCat.createTable(client)
+        CatsFixtures.createTable(client)
 
         assertThat(client.listTables().tableNames).containsExactly("cats")
     }
