@@ -3,6 +3,7 @@ package io.andrewohara.awsmock.dynamodb
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.dynamodbv2.AbstractAmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
+import java.time.Instant
 import java.util.*
 
 class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
@@ -19,12 +20,47 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
         val hashKeyAttribute = request.attributeDefinitions.first { it.attributeName == hashKeySchema.attributeName }
 
         val rangeKeySchema = request.keySchema.firstOrNull { it.keyType == KeyType.RANGE.toString() }
-        val rangeKeyAttribute = request.attributeDefinitions.firstOrNull { it.attributeName == rangeKeySchema?.attributeName }
+        val rangeKeyAttribute = rangeKeySchema?.let {
+            request.attributeDefinitions.firstOrNull { it.attributeName == rangeKeySchema.attributeName } ?: throw createValidationException()
+        }
 
-        val table = MockTable(name = request.tableName, hashKeyDef = hashKeyAttribute, rangeKeyDef = rangeKeyAttribute)
+        val description = TableDescription().apply {
+            tableName = request.tableName
+            tableArn = UUID.randomUUID().toString()
+            tableId = tableArn
+            tableStatus = TableStatus.ACTIVE.toString()
+            creationDateTime = Date.from(Instant.now())
+            provisionedThroughput = request.provisionedThroughput.toDescription()
+
+            setGlobalSecondaryIndexes((request.globalSecondaryIndexes ?: emptyList()).map { index ->
+                GlobalSecondaryIndexDescription().apply {
+                    indexArn = UUID.randomUUID().toString()
+                    indexName = index.indexName
+                    setKeySchema(index.keySchema)
+                    projection = index.projection
+                    provisionedThroughput = index.provisionedThroughput.toDescription()
+                }
+            })
+
+            setLocalSecondaryIndexes((request.localSecondaryIndexes ?: emptyList()).map { index ->
+                LocalSecondaryIndexDescription().apply {
+                    indexArn = UUID.randomUUID().toString()
+                    indexName = index.indexName
+                    setKeySchema(index.keySchema)
+                    projection = index.projection
+                }
+            })
+        }
+
+        val table = MockTable(description = description, hashKeyDef = hashKeyAttribute, rangeKeyDef = rangeKeyAttribute)
         tables.add(table)
 
-        return CreateTableResult()
+        return CreateTableResult().withTableDescription(description)
+    }
+
+    override fun describeTable(request: DescribeTableRequest): DescribeTableResult {
+        val table = getTable(request.tableName)
+        return DescribeTableResult().withTable(table.description())
     }
 
     override fun listTables(request: ListTablesRequest): ListTablesResult {
@@ -151,4 +187,15 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
         errorCode = "ResourceInUseException"
         statusCode = 400
     }
+
+    private fun createValidationException() = AmazonDynamoDBException("One or more parameter values were invalid").apply {
+        requestId = UUID.randomUUID().toString()
+        errorType = AmazonServiceException.ErrorType.Client
+        errorCode = "ValidationException"
+        statusCode = 400
+    }
 }
+
+private fun ProvisionedThroughput.toDescription() = ProvisionedThroughputDescription()
+        .withReadCapacityUnits(readCapacityUnits)
+        .withWriteCapacityUnits(writeCapacityUnits)

@@ -22,7 +22,6 @@ class QueryUnitTest {
                 { client.query(request) },
                 ResourceNotFoundException::class.java
         )
-
         exception.assertIsNotFound()
     }
 

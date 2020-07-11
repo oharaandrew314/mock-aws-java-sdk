@@ -2,6 +2,7 @@ package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.dynamodbv2.model.*
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 
 object TestUtils {
@@ -30,6 +31,13 @@ object TestUtils {
     fun AmazonDynamoDBException.assertIsMismatchedKey(key: AttributeDefinition, actual: ScalarAttributeType) {
         assertThat(errorType).isEqualTo(AmazonServiceException.ErrorType.Client)
         assertThat(errorMessage).isEqualTo("One or more parameter values were invalid: Type mismatch for key ${key.attributeName} expected: ${key.attributeType} actual: $actual")
+        assertThat(errorCode).isEqualTo("ValidationException")
+        assertThat(statusCode).isEqualTo(400)
+    }
+
+    fun AmazonDynamoDBException.assertIsInvalidParameter() {
+        assertThat(errorType).isEqualTo(AmazonServiceException.ErrorType.Client)
+        assertThat(errorMessage).startsWith("One or more parameter values were invalid")
         assertThat(errorCode).isEqualTo("ValidationException")
         assertThat(statusCode).isEqualTo(400)
     }
