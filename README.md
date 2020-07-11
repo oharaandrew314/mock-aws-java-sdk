@@ -87,7 +87,8 @@ Instead, this is meant to be a unit and integration testing aid to give you a cl
 To that end, this tool provides you with select implementations of AWS client interfaces.
 When you inject these mocks into your business logic during tests, the commands will bypass AWS and be handled by custom, in-memory implementations.
 
-Since only the low-level interfaces are overridden, the Dynamo DB Document and Mapper interfaces will work as long as they are initialized with a mock. 
+Since only the low-level interfaces are overridden, the Dynamo DB Document and Mapper interfaces will work as long as they are initialized with a mock.
+You can see it in action in [this sample](https://github.com/oharaandrew314/mock-aws-java-sdk/blob/master/src/test/kotlin/io/andrewohara/awsmock/samples/dynamodb/DynamoCatsDao.kt#L13-L17). 
 
 ## Gotchas
 
