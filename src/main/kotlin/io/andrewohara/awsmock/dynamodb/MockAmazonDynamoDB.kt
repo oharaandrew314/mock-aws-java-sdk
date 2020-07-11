@@ -16,14 +16,6 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
     override fun createTable(request: CreateTableRequest): CreateTableResult {
         if (tables.any { it.name == request.tableName }) throw createResourceInUseException(request.tableName)
 
-        val hashKeySchema = request.keySchema.first { it.keyType == KeyType.HASH.toString() }
-        val hashKeyAttribute = request.attributeDefinitions.first { it.attributeName == hashKeySchema.attributeName }
-
-        val rangeKeySchema = request.keySchema.firstOrNull { it.keyType == KeyType.RANGE.toString() }
-        val rangeKeyAttribute = rangeKeySchema?.let {
-            request.attributeDefinitions.firstOrNull { it.attributeName == rangeKeySchema.attributeName } ?: throw createValidationException()
-        }
-
         val description = TableDescription().apply {
             tableName = request.tableName
             tableArn = "${request.tableName}-arn"
@@ -55,7 +47,7 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
             })
         }
 
-        val table = MockTable(description = description, hashKeyDef = hashKeyAttribute, rangeKeyDef = rangeKeyAttribute)
+        val table = MockTable(description = description)
         tables.add(table)
 
         return CreateTableResult().withTableDescription(description)
@@ -138,6 +130,15 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
     override fun query(request: QueryRequest): QueryResult {
         val table = getTable(request.tableName)
 
+        if (request.indexName != null) {
+            if (
+                    table.description().globalSecondaryIndexes.firstOrNull { it.indexName == request.indexName } == null
+                    && table.description().localSecondaryIndexes.firstOrNull { it.indexName == request.indexName } == null
+            ) {
+                throw createMissingIndexException(request.indexName)
+            }
+        }
+
         val items = table.query(
                 keys = request.keyConditions ?: emptyMap(),
                 filter = request.queryFilter ?: emptyMap(),
@@ -176,30 +177,30 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
         return DeleteTableResult()
     }
-
-    private fun createResourceNotFoundException() = ResourceNotFoundException("Requested resource not found").apply {
-        requestId = UUID.randomUUID().toString()
-        errorType = AmazonServiceException.ErrorType.Client
-        errorCode = "ResourceNotFoundException"
-        statusCode = 400
-    }
-
-    private fun createResourceInUseException(tableName: String) = ResourceInUseException("Table already exists: $tableName").apply {
-        requestId = UUID.randomUUID().toString()
-        errorType = AmazonServiceException.ErrorType.Client
-        errorCode = "ResourceInUseException"
-        statusCode = 400
-    }
-
-    private fun createValidationException() = AmazonDynamoDBException("One or more parameter values were invalid").apply {
-        requestId = UUID.randomUUID().toString()
-        errorType = AmazonServiceException.ErrorType.Client
-        errorCode = "ValidationException"
-        statusCode = 400
-    }
 }
 
 private fun ProvisionedThroughput.toDescription() = ProvisionedThroughputDescription()
         .withReadCapacityUnits(readCapacityUnits)
         .withWriteCapacityUnits(writeCapacityUnits)
         .withNumberOfDecreasesToday(0)
+
+private fun createResourceNotFoundException() = ResourceNotFoundException("Requested resource not found").apply {
+    requestId = UUID.randomUUID().toString()
+    errorType = AmazonServiceException.ErrorType.Client
+    errorCode = "ResourceNotFoundException"
+    statusCode = 400
+}
+
+private fun createResourceInUseException(tableName: String) = ResourceInUseException("Table already exists: $tableName").apply {
+    requestId = UUID.randomUUID().toString()
+    errorType = AmazonServiceException.ErrorType.Client
+    errorCode = "ResourceInUseException"
+    statusCode = 400
+}
+
+private fun createMissingIndexException(indexName: String) = AmazonDynamoDBException("The table does not have the specified index: $indexName").apply {
+    requestId = UUID.randomUUID().toString()
+    errorType = AmazonServiceException.ErrorType.Client
+    errorCode = "ValidationException"
+    statusCode = 400
+}

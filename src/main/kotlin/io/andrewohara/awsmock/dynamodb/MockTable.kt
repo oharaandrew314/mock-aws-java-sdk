@@ -6,16 +6,22 @@ import com.amazonaws.services.dynamodbv2.model.Condition
 import com.amazonaws.services.dynamodbv2.model.*
 import java.util.*
 
-data class MockTable(
-        private val description: TableDescription,
-        private val hashKeyDef: AttributeDefinition,
-        private val rangeKeyDef: AttributeDefinition?
-) {
+data class MockTable(private val description: TableDescription) {
+
     val name: String = description.tableName
     val items = mutableListOf<MockItem>()
 
-    fun save(item: MockItem) {
+    private val hashKeyDef = description.keySchema.get(KeyType.HASH)!!.attribute() ?: throw createValidationException()
+    private val rangeKeyDef = let {
+        val key = description.keySchema.get(KeyType.RANGE)
+        if (key == null) {
+            null
+        } else {
+            key.attribute() ?: throw createValidationException()
+        }
+    }
 
+    fun save(item: MockItem) {
         val hashKey = item.hashKey() ?: throw createMissingKeyException(hashKeyDef)
         if (hashKeyDef.type() != hashKey.dataType()) throw createMismatchedKeyException(hashKeyDef, hashKey.dataType())
 
@@ -55,11 +61,12 @@ data class MockTable(
     }
 
     fun query(keys: Map<String, Condition>, filter: Map<String, Condition>, scanIndexForward: Boolean): List<MockItem> {
-        val hashKeyCondition = keys.getValue(hashKeyDef.attributeName)  //FIXME do the keyConditions always pertain only to the hash key?
-
-        val filtered = items
-                .filter { it.hashKey().compareWith(hashKeyCondition) } // query on hash key
-                .filter(filter) // filter on rest of conditions
+        val filtered = items.filter { item ->
+            keys.all { (key, condition) ->
+                item[key].compareWith(condition)
+            }
+        }
+                .filter(filter)
 
         if (rangeKeyDef == null)   return filtered
 
@@ -78,19 +85,29 @@ data class MockTable(
         return filter { item -> filter.all { (key, condition) -> item[key].compareWith(condition) } }
     }
 
-    private fun createMissingKeyException(key: AttributeDefinition) = AmazonDynamoDBException("One or more parameter values were invalid: Missing the key ${key.attributeName} in the item").apply {
-        requestId = UUID.randomUUID().toString()
-        errorType = AmazonServiceException.ErrorType.Client
-        errorCode = "ValidationException"
-        statusCode = 400
-    }
-
-    private fun createMismatchedKeyException(key: AttributeDefinition, actual: ScalarAttributeType) = AmazonDynamoDBException("One or more parameter values were invalid: Type mismatch for key ${key.attributeName} expected: ${key.attributeType} actual: $actual").apply {
-        requestId = UUID.randomUUID().toString()
-        errorType = AmazonServiceException.ErrorType.Client
-        errorCode = "ValidationException"
-        statusCode = 400
-    }
+    private fun KeySchemaElement.attribute() = description.attributeDefinitions.firstOrNull { it.attributeName == attributeName }
 }
 
 private fun AttributeDefinition.type() = ScalarAttributeType.fromValue(attributeType)
+private fun Collection<KeySchemaElement>.get(keyType: KeyType) = firstOrNull { it.keyType == keyType.toString() }
+
+private fun createMissingKeyException(key: AttributeDefinition) = AmazonDynamoDBException("One or more parameter values were invalid: Missing the key ${key.attributeName} in the item").apply {
+    requestId = UUID.randomUUID().toString()
+    errorType = AmazonServiceException.ErrorType.Client
+    errorCode = "ValidationException"
+    statusCode = 400
+}
+
+private fun createMismatchedKeyException(key: AttributeDefinition, actual: ScalarAttributeType) = AmazonDynamoDBException("One or more parameter values were invalid: Type mismatch for key ${key.attributeName} expected: ${key.attributeType} actual: $actual").apply {
+    requestId = UUID.randomUUID().toString()
+    errorType = AmazonServiceException.ErrorType.Client
+    errorCode = "ValidationException"
+    statusCode = 400
+}
+
+private fun createValidationException() = AmazonDynamoDBException("One or more parameter values were invalid").apply {
+    requestId = UUID.randomUUID().toString()
+    errorType = AmazonServiceException.ErrorType.Client
+    errorCode = "ValidationException"
+    statusCode = 400
+}

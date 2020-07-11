@@ -1,11 +1,10 @@
-package io.andrewohara.awsmock.dynamodb.mapper
+package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.fixtures.DynamoCat
-import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
@@ -15,6 +14,10 @@ class TableMapperUnitTest {
 
     private val client = MockAmazonDynamoDB()
     private val mapper = CatsFixtures.mapper(client)
+
+    private val toggles = DynamoCat(2, "Toggles", "female")
+    private val smokey = DynamoCat(1, "Smokey", "female")
+    private val bandit = DynamoCat(1, "Bandit", "male")
 
     @Before
     fun setup() {
@@ -29,9 +32,6 @@ class TableMapperUnitTest {
 
     @Test
     fun `scan all`() {
-        val toggles = DynamoCat(1, "Toggles", "female")
-        val smokey = DynamoCat(2, "Smokey", "female")
-        val bandit = DynamoCat(2, "Bandit", "male")
         mapper.batchSave(setOf(toggles, smokey, bandit))
 
         assertThat(mapper.scan(DynamoDBScanExpression())).containsExactlyInAnyOrder(bandit, smokey, toggles)
@@ -39,9 +39,6 @@ class TableMapperUnitTest {
 
     @Test
     fun `scan with EQ filter`() {
-        val toggles = DynamoCat(1, "Toggles", "female")
-        val smokey = DynamoCat(2, "Smokey", "female")
-        val bandit = DynamoCat(2, "Bandit", "male")
         mapper.batchSave(setOf(toggles, smokey, bandit))
 
         val expression = DynamoDBScanExpression()
@@ -60,26 +57,20 @@ class TableMapperUnitTest {
 
     @Test
     fun query() {
-        val toggles = DynamoCat(1, "Toggles", "female")
-        val smokey = DynamoCat(2, "Smokey", "female")
-        val bandit = DynamoCat(2, "Bandit", "male")
         mapper.batchSave(setOf(toggles, smokey, bandit))
 
         val expression = DynamoDBQueryExpression<DynamoCat>()
-                .withHashKeyValues(DynamoCat(2))
+                .withHashKeyValues(DynamoCat(1))
 
         assertThat(mapper.query(expression)).containsExactly(bandit, smokey)
     }
 
     @Test
     fun `query in reverse order`() {
-        val toggles = DynamoCat(1, "Toggles", "female")
-        val smokey = DynamoCat(2, "Smokey", "female")
-        val bandit = DynamoCat(2, "Bandit", "male")
         mapper.batchSave(setOf(toggles, smokey, bandit))
 
         val expression = DynamoDBQueryExpression<DynamoCat>()
-                .withHashKeyValues(DynamoCat(2))
+                .withHashKeyValues(DynamoCat(1))
                 .withScanIndexForward(false)
 
         assertThat(mapper.query(expression)).containsExactly(smokey, bandit)
@@ -87,21 +78,19 @@ class TableMapperUnitTest {
 
     @Test
     fun `get missing`() {
-        val item = mapper.load(1, "Toggles")
+        val item = mapper.load(2, "Toggles")
         assertThat(item).isNull()
     }
 
     @Test
     fun get() {
-        val toggles = DynamoCat(1, "Toggles", "female")
         mapper.save(toggles)
 
-        assertThat(mapper.load(1, "Toggles")).isEqualTo(toggles)
+        assertThat(mapper.load(2, "Toggles")).isEqualTo(toggles)
     }
 
     @Test
     fun `delete item`() {
-        val toggles = DynamoCat(1, "Toggles", "female")
         mapper.save(toggles)
 
         mapper.delete(toggles)
@@ -110,8 +99,6 @@ class TableMapperUnitTest {
 
     @Test
     fun `delete missing item`() {
-        val toggles = DynamoCat(1, "Toggles", "female")
-
         mapper.delete(toggles)  // no error
     }
 
@@ -129,5 +116,4 @@ class TableMapperUnitTest {
         val exception = catchThrowableOfType({ mapper.deleteTable() }, ResourceNotFoundException::class.java)
         exception.assertIsNotFound()
     }
-
 }

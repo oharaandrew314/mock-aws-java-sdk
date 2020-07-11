@@ -2,7 +2,6 @@ package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.dynamodbv2.model.*
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 
 object TestUtils {
@@ -42,6 +41,13 @@ object TestUtils {
         assertThat(statusCode).isEqualTo(400)
     }
 
+    fun AmazonDynamoDBException.assertIsMissingIndex(indexName: String) {
+        assertThat(errorType).isEqualTo(AmazonServiceException.ErrorType.Client)
+        assertThat(errorMessage).isEqualTo("The table does not have the specified index: $indexName")
+        assertThat(errorCode).isEqualTo("ValidationException")
+        assertThat(statusCode).isEqualTo(400)
+    }
+
     fun Condition.eq(value: Int): Condition = this
             .withComparisonOperator(ComparisonOperator.EQ)
             .withAttributeValueList(AttributeValue().withN(value.toString()))
@@ -50,5 +56,5 @@ object TestUtils {
             .withComparisonOperator(ComparisonOperator.EQ)
             .withAttributeValueList(AttributeValue(value))
 
-    fun attributeValue(value: Int) = AttributeValue().withN(value.toString())
+    fun attributeValue(value: Int): AttributeValue = AttributeValue().withN(value.toString())
 }
