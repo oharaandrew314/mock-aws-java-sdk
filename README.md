@@ -84,9 +84,6 @@ There are some [Sample Snippets](https://github.com/oharaandrew314/mock-aws-java
 
 - content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
 
-
-Java 8 and 11 are officially supported.
-
 ## Want to Help?
 
 You can:
