@@ -26,16 +26,19 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
         val description = TableDescription().apply {
             tableName = request.tableName
-            tableArn = UUID.randomUUID().toString()
-            tableId = tableArn
+            tableArn = "${request.tableName}-arn"
+            tableId = "${request.tableName}-id"
             tableStatus = TableStatus.ACTIVE.toString()
             creationDateTime = Date.from(Instant.now())
             provisionedThroughput = request.provisionedThroughput.toDescription()
+            setAttributeDefinitions(request.attributeDefinitions)
+            setKeySchema(request.keySchema)
 
             setGlobalSecondaryIndexes((request.globalSecondaryIndexes ?: emptyList()).map { index ->
                 GlobalSecondaryIndexDescription().apply {
-                    indexArn = UUID.randomUUID().toString()
+                    indexArn = "${index.indexName}-arn"
                     indexName = index.indexName
+                    indexStatus = IndexStatus.ACTIVE.toString()
                     setKeySchema(index.keySchema)
                     projection = index.projection
                     provisionedThroughput = index.provisionedThroughput.toDescription()
@@ -44,7 +47,7 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 
             setLocalSecondaryIndexes((request.localSecondaryIndexes ?: emptyList()).map { index ->
                 LocalSecondaryIndexDescription().apply {
-                    indexArn = UUID.randomUUID().toString()
+                    indexArn = "${index.indexName}-arn"
                     indexName = index.indexName
                     setKeySchema(index.keySchema)
                     projection = index.projection
@@ -199,3 +202,4 @@ class MockAmazonDynamoDB: AbstractAmazonDynamoDB() {
 private fun ProvisionedThroughput.toDescription() = ProvisionedThroughputDescription()
         .withReadCapacityUnits(readCapacityUnits)
         .withWriteCapacityUnits(writeCapacityUnits)
+        .withNumberOfDecreasesToday(0)

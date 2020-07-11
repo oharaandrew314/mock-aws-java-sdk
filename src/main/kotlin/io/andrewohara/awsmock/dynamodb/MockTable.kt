@@ -28,7 +28,15 @@ data class MockTable(
         items.add(item)
     }
 
-    fun description() = description.withItemCount(items.size.toLong())
+    fun description(): TableDescription = description.apply {
+        itemCount = items.size.toLong()
+        for (index in globalSecondaryIndexes) {
+            index.itemCount = items.size.toLong()
+        }
+        for (index in localSecondaryIndexes) {
+            index.itemCount = items.size.toLong()
+        }
+    }
 
     fun get(key: MockItem): MockItem? {
         return items.firstOrNull { it.hashKey() == key.hashKey() && it.rangeKey() == key.rangeKey() }
