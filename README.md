@@ -79,10 +79,20 @@ public class QuickStartUnitTest {
 
 There are some [Sample Snippets](https://github.com/oharaandrew314/mock-aws-java-sdk/tree/master/src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
 
+## How it Works
+
+This tool isn't meant to be an AWS emulator, so it won't persist your data, it might abstract a few intricacies away, and it might not always match exactly what AWS would give you.
+
+Instead, this is meant to be a unit and integration testing aid to give you a close approximation of how your code will run in a real environment.
+To that end, this tool provides you with select implementations of AWS client interfaces.
+When you inject these mocks into your business logic during tests, the commands will bypass AWS and be handled by custom, in-memory implementations.
+
+Since only the low-level interfaces are overridden, the Dynamo DB Document and Mapper interfaces will work as long as they are initialized with a mock. 
 
 ## Gotchas
 
 - content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
+- Dynamo DB query expressions are not supported (conditions will work)
 
 ## Want to Help?
 
