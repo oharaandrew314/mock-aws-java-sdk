@@ -67,10 +67,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'io.andrewohara'
-            artifactId = 'mock-aws-java-sdk'
-            version = '0.3.1'
-
             from components.kotlin
             artifact sourcesJar
         }
