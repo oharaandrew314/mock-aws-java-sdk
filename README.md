@@ -74,6 +74,7 @@ public class QuickStartUnitTest {
 | S3 | Core Functionality | [AmazonS3](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html) | io.andrewohara.awsmock.s3.MockAmazonS3() |
 | SQS | Core Functionality | [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html) | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
 | Dynamo DB | Core Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
+| SSM | Parameter Store Only | [AWSSimpleSystemsManagement](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/simplesystemsmanagement/AWSSimpleSystemsManagement.html) | io.andrewohara.awsmock.ssm.MockAWSSimpleSystemsManagement |
 
 ## Samples
 
@@ -94,7 +95,6 @@ You can see it in action in [this sample](https://github.com/oharaandrew314/mock
 
 - content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
 - Dynamo DB query expressions not supported (conditions will work)
-- Dynamo DB isn't emulated nearly as well as Dynamo DB Local, but you may find the simplicity of this tool to be worth it
 
 ## Want to Help?
 
