@@ -20,7 +20,7 @@ ext {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: ver.aws
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-ssm', version: ver.aws
