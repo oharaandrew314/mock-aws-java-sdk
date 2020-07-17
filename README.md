@@ -10,7 +10,7 @@ A library that lets you mock AWS out of your tests, allowing you to achieve for 
 ## Requirements
 
 - java 8 and above
-- aws-java-sdk-\<service\> of your choice as they are not provided by this package; versions `1.11.300` and above
+- aws-java-sdk-\<service\> of your choice as they are not provided by this package; versions `1.11.309` and above
 
 ## Install 
 
@@ -75,6 +75,7 @@ public class QuickStartUnitTest {
 | SQS | Core Functionality | [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html) | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
 | Dynamo DB | Core Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
 | SSM | Parameter Store Only | [AWSSimpleSystemsManagement](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/simplesystemsmanagement/AWSSimpleSystemsManagement.html) | io.andrewohara.awsmock.ssm.MockAWSSimpleSystemsManagement |
+| Secrets Manager | All except rotation | [AWSSecretsManager](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/secretsmanager/AWSSecretsManager.html) | io.andrewohara.awsmock.secretsmanager.MockAWSSecretsManager |
 
 ## Samples
 
@@ -95,6 +96,7 @@ You can see it in action in [this sample](https://github.com/oharaandrew314/mock
 
 - content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
 - Dynamo DB query expressions not supported (conditions will work)
+- there is no awareness of time; timestamps will not be returned, and passing time will not affect resources
 
 ## Want to Help?
 

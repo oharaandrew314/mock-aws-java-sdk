@@ -13,22 +13,24 @@ repositories {
 
 ext {
     ver = [
-        aws: '1.11.300+'
+        aws: '1.11.309+'
     ]
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: ver.aws
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-ssm', version: ver.aws
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager', version: ver.aws
 
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: ver.aws
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: ver.aws
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: ver.aws
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-ssm', version: ver.aws
+    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager', version: ver.aws
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'org.assertj:assertj-core:3.13.2'
@@ -45,7 +47,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.97 // jacoco isn't smart enough to detect 100% kotlin coverage
+                minimum = 0.97 // jacoco doesn't play very nice with kotlin
             }
         }
     }
