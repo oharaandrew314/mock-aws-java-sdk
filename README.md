@@ -76,6 +76,7 @@ public class QuickStartUnitTest {
 | Dynamo DB | Core Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
 | SSM | Parameter Store Only | [AWSSimpleSystemsManagement](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/simplesystemsmanagement/AWSSimpleSystemsManagement.html) | io.andrewohara.awsmock.ssm.MockAWSSimpleSystemsManagement |
 | Secrets Manager | All except rotation | [AWSSecretsManager](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/secretsmanager/AWSSecretsManager.html) | io.andrewohara.awsmock.secretsmanager.MockAWSSecretsManager |
+| SNS | Core Publish Functionality | [AmazonSNS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sns/AmazonSNS.html) | io.andrewohara.awsmock.sns.MockAmazonSNS |
 
 ## Samples
 
