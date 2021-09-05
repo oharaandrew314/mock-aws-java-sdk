@@ -97,5 +97,4 @@ allowing it to be shared between clients.
 
 ## Gotchas
 
-- content-type cannot be inferred in s3 file uploads on osx-java8 due to an [OSX JVM bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
-- there is no awareness of time; timestamps will not be returned, and passing time will not affect resources
+- most services will not yet respect the passage of time
