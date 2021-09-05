@@ -27,6 +27,7 @@ dependencies {
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-ssm', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager', version: ver.aws
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sns', version: ver.aws
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-cloudformation', version: ver.aws
 
     compileOnly "software.amazon.awssdk:s3:${ver.awsV2}"
     compileOnly "software.amazon.awssdk:sns:${ver.awsV2}"
