@@ -21,46 +21,40 @@ Follow the instructions on Jitpack.
 
 Just make a mocked client and inject it into your classes that uses AWS.  Perform any initialization you need, and test away!
 
-```java
-public class QuickStart {
+```kotlin
+class GameService(private val sns: SnsClient, private val eventsTopicArn: String) {
 
-    private final AmazonS3 s3Client;
-    private final String bucket;
+    private val gamesDao = mutableMapOf<UUID, String>()
 
-    public QuickStart(String bucket, AmazonS3 s3Client) {
-        this.bucket = bucket;
-        this.s3Client = s3Client;
-    }
+    operator fun get(id: UUID) = gamesDao[id]
 
-    public List<String> process() {
-        return s3Client.listObjectsV2(bucket)
-                .getObjectSummaries()
-                .stream()
-                .map(summary -> s3Client.getObjectAsString(bucket, summary.getKey()))
-                .collect(Collectors.toList());
+    fun createGame(name: String): UUID {
+        val id = UUID.randomUUID()
+        gamesDao[id] = name
+
+        sns.publish {
+            it.topicArn(eventsTopicArn)
+            it.message(name)
+        }
+
+        return id
     }
 }
 
-```
+class GameServiceTest {
 
-```java
-public class QuickStartUnitTest {
-
-    private final AmazonS3 s3Client = new MockAmazonS3();
-    private final QuickStart testObj = new QuickStart("bucket", s3Client);
+    private val backend = MockSnsBackend()
+    private val topic = backend.createTopic("game-events")
+    private val testObj = GameService(
+            sns = MockSnsV2(backend),
+            eventsTopicArn = topic.arn
+    )
 
     @Test
-    public void processTwoFiles() {
-        // initialize state
-        s3Client.createBucket("bucket");
-        s3Client.putObject("bucket", "file1.txt", "special content");
-        s3Client.putObject("bucket", "file2.txt", "secret content");
-
-        // perform test
-        final List<String> result = testObj.process();
-
-        // verify result
-        Assertions.assertThat(result).containsExactlyInAnyOrder("special content", "secret content");
+    fun `create game`() {
+        val id = testObj.createGame("Mass Effect 3")
+        Assertions.assertThat(testObj[id]).isEqualTo("Mass Effect 3")
+        Assertions.assertThat(topic.messages().map { it.message }).containsExactly("Mass Effect 3")
     }
 }
 ```
