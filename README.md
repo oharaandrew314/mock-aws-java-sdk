@@ -75,6 +75,7 @@ public class QuickStartUnitTest {
 | SSM | v1 | :heavy_check_mark: Parameter Store |
 | Secrets Manager | v1 | :heavy_check_mark: Core Functionality<br/>:x: Secret Rotation |
 | SNS | v1, v2 | :heavy_check_mark: Create/Delete Topic<br/>:heavy_check_mark: Publish to Topic |
+| Cloudformation | v2 | :heavy_check_mark: Exports Only |
 
 ## Samples
 
