@@ -69,7 +69,7 @@ public class QuickStartUnitTest {
 
 | Service | SDKs | Support |
 | ------- | ---- | ------- | 
-| S3 | v1, v2 | :heavy_check_mark: Core Functionality |
+| S3 | v1, v2 | :heavy_check_mark: Core Functionality<br/>:x: Object Metadata<br/>:x: Permissions |
 | SQS | v1 | :heavy_check_mark: Core Functionality |
 | Dynamo DB | v1 | :heavy_check_mark: Core Functionality<br/>:heavy_check_mark: Mapper<br/>:x: query expressions<br/>:x: conditional operations<br/> |
 | SSM | v1 | :heavy_check_mark: Parameter Store |
