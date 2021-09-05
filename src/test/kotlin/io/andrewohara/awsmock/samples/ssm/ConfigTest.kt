@@ -4,7 +4,7 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterType
 import com.amazonaws.services.simplesystemsmanagement.model.PutParameterRequest
 import io.andrewohara.awsmock.ssm.MockAWSSimpleSystemsManagement
 import org.assertj.core.api.Assertions
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ConfigTest {
 

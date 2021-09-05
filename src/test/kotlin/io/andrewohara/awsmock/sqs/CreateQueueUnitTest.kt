@@ -5,7 +5,7 @@ import com.amazonaws.services.sqs.model.CreateQueueRequest
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsInvalidParameter
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueNameAlreadyExists
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class CreateQueueUnitTest {
 

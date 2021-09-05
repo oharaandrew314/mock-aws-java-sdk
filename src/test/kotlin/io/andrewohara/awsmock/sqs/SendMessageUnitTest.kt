@@ -4,7 +4,7 @@ import com.amazonaws.services.sqs.model.AmazonSQSException
 import com.amazonaws.services.sqs.model.SendMessageRequest
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class SendMessageUnitTest {
 

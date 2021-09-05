@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.sqs
 import com.amazonaws.services.sqs.model.AmazonSQSException
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DeleteQueueUnitTest {
 

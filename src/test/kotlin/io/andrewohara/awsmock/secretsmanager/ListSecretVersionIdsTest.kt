@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.secretsmanager
 import com.amazonaws.services.secretsmanager.model.*
 import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertIsCorrect
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class ListSecretVersionIdsTest {

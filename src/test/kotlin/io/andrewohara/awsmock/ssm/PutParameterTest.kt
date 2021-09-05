@@ -6,18 +6,11 @@ import io.andrewohara.awsmock.ssm.SsmUtils.assertIsKeyIdNotRequired
 import org.assertj.core.api.Assertions.*
 import io.andrewohara.awsmock.ssm.SsmUtils.get
 import io.andrewohara.awsmock.ssm.SsmUtils.set
-import io.andrewohara.awsmock.ssm.SsmUtils.delete
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class PutParameterTest {
 
     private val client = MockAWSSimpleSystemsManagement()
-
-    @After
-    fun cleanup() {
-        client.delete("foo")
-    }
 
     @Test
     fun `put string`() {

@@ -4,7 +4,7 @@ import com.amazonaws.services.secretsmanager.model.*
 import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertIsCorrect
 import io.andrewohara.awsmock.secretsmanager.SecretsUtils.cannotUpdateDeletedSecret
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
 import java.util.*
 

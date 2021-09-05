@@ -6,7 +6,7 @@ import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsInvalidReceiptHandleForQ
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsInvalidVisibilityTimeout
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ChangeMessageVisibilityUnitTest {
 

@@ -1,14 +1,12 @@
 package io.andrewohara.awsmock.dynamodb
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest
-import com.amazonaws.services.dynamodbv2.model.QueryRequest
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.TestUtils.attributeValue
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class GetItemUnitTest {
 

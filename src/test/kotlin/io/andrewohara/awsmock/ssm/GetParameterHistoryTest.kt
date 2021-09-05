@@ -6,19 +6,12 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterNotFoundExc
 import com.amazonaws.services.simplesystemsmanagement.model.ParameterType
 import io.andrewohara.awsmock.ssm.SsmUtils.assertIsCorrect
 import io.andrewohara.awsmock.ssm.SsmUtils.set
-import io.andrewohara.awsmock.ssm.SsmUtils.delete
 import org.assertj.core.api.Assertions.*
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class GetParameterHistoryTest {
 
     private val client = MockAWSSimpleSystemsManagement()
-
-    @After
-    fun cleanup() {
-        client.delete("foo")
-    }
 
     @Test
     fun `get history for missing string`() {

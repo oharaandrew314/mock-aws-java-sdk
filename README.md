@@ -4,24 +4,22 @@
 
 # mock-aws-java-sdk
 
-A library that lets you mock AWS out of your tests, allowing you to achieve for better coverage with far less hassle.
-
+A test library providing mocked versions of AWS SDK clients, for integration with your tests.
 
 ## Requirements
 
 - java 8 and above
-- aws-java-sdk-\<service\> of your choice as they are not provided by this package; versions `1.11.309` and above
+- AWS SDKs are not bundled, so you can pick and choose which ones you want
 
-## Install 
-
-Install the latest all-in-one package from Jitpack.
+## Install
 
 [![](https://jitpack.io/v/oharaandrew314/mock-aws-java-sdk.svg)](https://jitpack.io/#oharaandrew314/mock-aws-java-sdk)
 
+Follow the instructions on Jitpack.
+
 ## QuickStart
 
-Any well-designed class will let you inject its dependencies, so the same can apply to your AWS mediators.
-Just inject the provided mocks into your business logic, then unit-test them as if they were connected to AWS. 
+Just make a mocked client and inject it into your classes that uses AWS.  Perform any initialization you need, and test away!
 
 ```java
 public class QuickStart {
@@ -69,14 +67,14 @@ public class QuickStartUnitTest {
 
 ## Supported Services
 
-| Service | Support | Interface | Mock Implementation |
-| ------- | ------- | --------- | ------------------- |
-| S3 | Core Functionality | [AmazonS3](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html) | io.andrewohara.awsmock.s3.MockAmazonS3() |
-| SQS | Core Functionality | [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html) | io.andrewohara.awsmock.sqs.MockAmazonSQS() |
-| Dynamo DB | Core Functionality | [AmazonDynamoDB](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/dynamodbv2/AmazonDynamoDB.html) | io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB |
-| SSM | Parameter Store Only | [AWSSimpleSystemsManagement](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/simplesystemsmanagement/AWSSimpleSystemsManagement.html) | io.andrewohara.awsmock.ssm.MockAWSSimpleSystemsManagement |
-| Secrets Manager | All except rotation | [AWSSecretsManager](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/secretsmanager/AWSSecretsManager.html) | io.andrewohara.awsmock.secretsmanager.MockAWSSecretsManager |
-| SNS | Core Publish Functionality | [AmazonSNS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sns/AmazonSNS.html) | io.andrewohara.awsmock.sns.MockAmazonSNS |
+| Service | SDKs | Support |
+| ------- | ---- | ------- | 
+| S3 | v1, v2 | :heavy_check_mark: Core Functionality |
+| SQS | v1 | :heavy_check_mark: Core Functionality |
+| Dynamo DB | v1 | <ul><li>:heavy_check_mark: Core Functionality</li><li>:heavy_check_mark: Mapper</li><li>:x: query expressions</li><li>:x: conditional operations</li></ul> |
+| SSM | v1 | :heavy_check_mark: Parameter Store |
+| Secrets Manager | v1 | <ul><li>:heavy_check_mark: Core Functionality</li><li>:x: Secret Rotation</li></ul> |
+| SNS | v1, v2 | <ul><li>:heavy_check_mark: Create/Delete Topic</li><li>:heavy_check_mark: Publish to Topic</li></ul> |
 
 ## Samples
 
@@ -84,25 +82,20 @@ There are some [Sample Snippets](https://github.com/oharaandrew314/mock-aws-java
 
 ## How it Works
 
-This tool isn't meant to be an AWS emulator, so it won't persist your data, it might abstract a few intricacies away, and it might not always match exactly what AWS would give you.
+Each mocked SDK implements the same interface as the standard SDKs.
+While the standard ones will delegate the calls to the AWS REST API,
+the mocked one will perform the operations in-memory instead.
 
-Instead, this is meant to be a unit and integration testing aid to give you a close approximation of how your code will run in a real environment.
-To that end, this tool provides you with select implementations of AWS client interfaces.
-When you inject these mocks into your business logic during tests, the commands will bypass AWS and be handled by custom, in-memory implementations.
+Instead of allowing your classes under test to initialize their own SDK,
+you should update them to allow the SDK to be injected;
+your main runner will inject real SDKs, and your tests will inject the mocks.
 
-Since only the low-level client interfaces are mocked, the Dynamo DB Document and Mapper clients will work as long as they are initialized with the mock.
-You can see it in action in [this sample](https://github.com/oharaandrew314/mock-aws-java-sdk/blob/master/src/test/kotlin/io/andrewohara/awsmock/samples/dynamodbmapper/DynamoCatsDao.kt#L13-L17). 
+Since the AWS resources created in the mocks are in-memory, they will not persist,
+and they will not be shared between clients.
+However, all the mocks with support for the v2 sdk will allow you to inject the backend into the client,
+allowing it to be shared between clients.
 
 ## Gotchas
 
-- content-type cannot be inferred in s3 file uploads on osx-java8 due to a [jvm bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
-- Dynamo DB query expressions not supported (conditions will work)
+- content-type cannot be inferred in s3 file uploads on osx-java8 due to an [OSX JVM bug](https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7133484)
 - there is no awareness of time; timestamps will not be returned, and passing time will not affect resources
-
-## Want to Help?
-
-You can:
-
-- submit issues for errors that don't match what AWS would return
-- Submit a PR to increase the level of implementation for the currently supported services
-- submit a PR for a new supported service

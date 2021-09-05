@@ -7,22 +7,18 @@ import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.fixtures.DynamoCat
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class TableMapperUnitTest {
 
     private val client = MockAmazonDynamoDB()
-    private val mapper = CatsFixtures.mapper(client)
+    private val mapper = CatsFixtures.mapper(client).also { mapper ->
+        mapper.createTable(ProvisionedThroughput(1, 1))
+    }
 
     private val toggles = DynamoCat(2, "Toggles", "female")
     private val smokey = DynamoCat(1, "Smokey", "female")
     private val bandit = DynamoCat(1, "Bandit", "male")
-
-    @Before
-    fun setup() {
-        mapper.createTable(ProvisionedThroughput(1, 1))
-    }
 
     @Test
     fun `scan empty`() {

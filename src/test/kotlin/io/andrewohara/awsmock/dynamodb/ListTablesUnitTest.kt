@@ -2,7 +2,7 @@ package io.andrewohara.awsmock.dynamodb
 
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ListTablesUnitTest {
 

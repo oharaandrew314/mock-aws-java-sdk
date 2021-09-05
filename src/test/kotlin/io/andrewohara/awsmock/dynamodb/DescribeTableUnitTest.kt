@@ -5,7 +5,7 @@ import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import io.andrewohara.awsmock.dynamodb.fixtures.OwnersFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DescribeTableUnitTest {
 

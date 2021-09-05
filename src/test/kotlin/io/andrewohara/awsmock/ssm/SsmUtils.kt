@@ -71,7 +71,7 @@ object SsmUtils {
         assertThat(statusCode).isEqualTo(400)
         assertThat(errorCode).isEqualTo("ParameterNotFound")
         assertThat(errorMessage).isNull()
-        assertThat(requestId).isNotEmpty()
+        assertThat(requestId).isNotEmpty
     }
 
     fun ParameterAlreadyExistsException.assertIsCorrect() {
@@ -79,7 +79,7 @@ object SsmUtils {
         assertThat(statusCode).isEqualTo(400)
         assertThat(errorCode).isEqualTo("ParameterAlreadyExists")
         assertThat(errorMessage).isEqualTo("The parameter already exists. To overwrite this value, set the overwrite option in the request to true.")
-        assertThat(requestId).isNotEmpty()
+        assertThat(requestId).isNotEmpty
     }
 
     fun AWSSimpleSystemsManagementException.assertIsKeyIdNotRequired() {
@@ -87,7 +87,7 @@ object SsmUtils {
         assertThat(statusCode).isEqualTo(400)
         assertThat(errorCode).isEqualTo("ValidationException")
         assertThat(errorMessage).isEqualTo("KeyId is required for SecureString type parameter only.")
-        assertThat(requestId).isNotEmpty()
+        assertThat(requestId).isNotEmpty
     }
 }
 

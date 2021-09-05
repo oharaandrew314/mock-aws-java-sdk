@@ -4,7 +4,7 @@ import com.amazonaws.services.sqs.model.*
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import io.andrewohara.awsmock.sqs.SQSExceptions.toBatchResultErrorEntry
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DeleteMessageBatchUnitTest {
 

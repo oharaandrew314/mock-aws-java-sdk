@@ -1,29 +1,17 @@
 package io.andrewohara.awsmock.secretsmanager
 
-import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder
 import com.amazonaws.services.secretsmanager.model.CreateSecretRequest
-import com.amazonaws.services.secretsmanager.model.DeleteSecretRequest
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest
 import com.amazonaws.services.secretsmanager.model.ResourceNotFoundException
 import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertIsCorrect
 import org.assertj.core.api.Assertions.*
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class GetSecretValueTest {
 
     private val client = MockAWSSecretsManager()
     private val name = UUID.randomUUID().toString()
-
-    @After
-    fun cleanup() {
-        try {
-            client.deleteSecret(DeleteSecretRequest().withSecretId(name))
-        } catch (e: ResourceNotFoundException) {
-            // no-op
-        }
-    }
 
     @Test
     fun `get missing secret`() {

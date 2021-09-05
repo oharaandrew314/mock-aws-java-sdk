@@ -6,15 +6,13 @@ import io.andrewohara.awsmock.dynamodb.TestUtils.attributeValue
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import io.andrewohara.awsmock.dynamodb.fixtures.OwnersFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class UpdateItemUnitTest {
 
     private val client = MockAmazonDynamoDB()
 
-    @Before
-    fun setup() {
+    init {
         CatsFixtures.createTable(client)
         OwnersFixtures.createTable(client)
     }

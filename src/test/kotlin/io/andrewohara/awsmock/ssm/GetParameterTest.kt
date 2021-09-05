@@ -7,18 +7,11 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterType
 import io.andrewohara.awsmock.ssm.SsmUtils.assertIsCorrect
 import org.assertj.core.api.Assertions.*
 import io.andrewohara.awsmock.ssm.SsmUtils.set
-import io.andrewohara.awsmock.ssm.SsmUtils.delete
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class GetParameterTest {
 
     private val client = MockAWSSimpleSystemsManagement()
-
-    @After
-    fun cleanup() {
-        client.delete("foo")
-    }
 
     @Test
     fun `get missing parameter`() {

@@ -4,31 +4,19 @@ import com.amazonaws.services.simplesystemsmanagement.model.GetParametersByPathR
 import com.amazonaws.services.simplesystemsmanagement.model.Parameter
 import com.amazonaws.services.simplesystemsmanagement.model.ParameterType
 import io.andrewohara.awsmock.ssm.SsmUtils.set
-import io.andrewohara.awsmock.ssm.SsmUtils.delete
 import org.assertj.core.api.Assertions.*
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class GetParametersByPathTest {
 
     private val client = MockAWSSimpleSystemsManagement()
 
-    @Before
-    fun setup() {
+    init {
         client["/cats/host"] = "https://cats.meow"
         client["/cats/apiKey"] = SecureParam("hunter2")
 
         client["/doggos/host"] = "https://doggos.woof"
         client["/doggos/apiKey"] = SecureParam("woof-and-attac")
-    }
-
-    @After
-    fun cleanup() {
-        client.delete("/cats/host")
-        client.delete("/cats/apiKey")
-        client.delete("/doggos/host")
-        client.delete("/doggos/apiKey")
     }
 
     @Test

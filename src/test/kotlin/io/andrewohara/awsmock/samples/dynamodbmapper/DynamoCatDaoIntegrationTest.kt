@@ -3,15 +3,13 @@ package io.andrewohara.awsmock.samples.dynamodbmapper
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
 import org.assertj.core.api.Assertions.*
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DynamoCatDaoIntegrationTest {
 
     private val testObj = DynamoCatsDao("cats", MockAmazonDynamoDB())
 
-    @Before
-    fun setup() {
+    init {
         testObj.mapper.createTable(ProvisionedThroughput(1, 1))
     }
 

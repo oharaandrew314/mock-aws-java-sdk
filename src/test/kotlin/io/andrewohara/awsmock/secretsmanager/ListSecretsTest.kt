@@ -2,7 +2,7 @@ package io.andrewohara.awsmock.secretsmanager
 
 import com.amazonaws.services.secretsmanager.model.*
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ListSecretsTest {
 

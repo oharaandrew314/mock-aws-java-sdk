@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.samples.secretsmanager
 import com.amazonaws.services.secretsmanager.model.CreateSecretRequest
 import io.andrewohara.awsmock.secretsmanager.MockAWSSecretsManager
 import org.assertj.core.api.Assertions
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ConfigTest {
 

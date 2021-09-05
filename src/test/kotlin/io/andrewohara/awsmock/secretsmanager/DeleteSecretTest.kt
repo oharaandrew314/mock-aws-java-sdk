@@ -6,7 +6,7 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest
 import com.amazonaws.services.secretsmanager.model.ResourceNotFoundException
 import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertIsCorrect
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class DeleteSecretTest {

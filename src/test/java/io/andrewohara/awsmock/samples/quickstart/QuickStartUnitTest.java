@@ -1,15 +1,15 @@
 package io.andrewohara.awsmock.samples.quickstart;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.andrewohara.awsmock.s3.MockAmazonS3;
+import io.andrewohara.awsmock.s3.MockS3V1;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 public class QuickStartUnitTest {
 
-    private final AmazonS3 s3Client = new MockAmazonS3();
+    private final AmazonS3 s3Client = new MockS3V1();
     private final QuickStart testObj = new QuickStart("bucket", s3Client);
 
     @Test

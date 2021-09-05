@@ -3,21 +3,11 @@ package io.andrewohara.awsmock.ssm
 import com.amazonaws.services.simplesystemsmanagement.model.*
 import org.assertj.core.api.Assertions.*
 import io.andrewohara.awsmock.ssm.SsmUtils.set
-import io.andrewohara.awsmock.ssm.SsmUtils.delete
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DescribeParametersTest {
 
     private val client = MockAWSSimpleSystemsManagement()
-
-    @After
-    fun cleanup() {
-        client.delete("name")
-        client.delete("cats")
-        client.delete("password")
-        client.delete("bankAccountNumber")
-    }
 
     @Test
     fun `describe parameters with no filters`() {

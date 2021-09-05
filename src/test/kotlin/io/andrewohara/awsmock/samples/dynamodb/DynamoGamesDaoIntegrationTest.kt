@@ -3,16 +3,14 @@ package io.andrewohara.awsmock.samples.dynamodb
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
 import org.assertj.core.api.Assertions.*
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DynamoGamesDaoIntegrationTest {
 
     private val client = MockAmazonDynamoDB()
     private val testObj = DynamoGamesDao("games", client)
 
-    @Before
-    fun createTable() {
+    init {
         val request = CreateTableRequest()
                 .withTableName("games")
                 .withAttributeDefinitions(

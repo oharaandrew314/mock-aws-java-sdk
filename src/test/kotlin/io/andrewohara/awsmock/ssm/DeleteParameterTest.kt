@@ -6,7 +6,7 @@ import io.andrewohara.awsmock.ssm.SsmUtils.assertIsCorrect
 import io.andrewohara.awsmock.ssm.SsmUtils.get
 import io.andrewohara.awsmock.ssm.SsmUtils.set
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DeleteParameterTest {
 

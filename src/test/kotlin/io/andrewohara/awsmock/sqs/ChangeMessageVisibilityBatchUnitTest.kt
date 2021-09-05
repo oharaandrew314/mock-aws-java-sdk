@@ -5,7 +5,7 @@ import io.andrewohara.awsmock.sqs.SQSExceptions.toBatchResultErrorEntry
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsEmptyBatch
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import org.assertj.core.api.Assertions
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ChangeMessageVisibilityBatchUnitTest {
 

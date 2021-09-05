@@ -5,7 +5,7 @@ import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsEmptyBatch
 import io.andrewohara.awsmock.sqs.SQSAssertions.assertIsQueueDoesNotExist
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class SendMessageBatchUnitTest {
 

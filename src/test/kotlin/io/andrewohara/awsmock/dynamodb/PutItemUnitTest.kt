@@ -7,7 +7,7 @@ import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsMismatchedKey
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsMissingKey
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class PutItemUnitTest {
 

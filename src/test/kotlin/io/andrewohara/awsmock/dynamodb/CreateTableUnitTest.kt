@@ -4,7 +4,7 @@ import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsInvalidParameter
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertTableInUse
 import org.assertj.core.api.Assertions.*
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class CreateTableUnitTest {
 

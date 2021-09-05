@@ -1,6 +1,5 @@
 package io.andrewohara.awsmock.dynamodb
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.DeleteRequest
 import com.amazonaws.services.dynamodbv2.model.PutRequest
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
@@ -8,25 +7,14 @@ import com.amazonaws.services.dynamodbv2.model.WriteRequest
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsNotFound
 import io.andrewohara.awsmock.dynamodb.fixtures.CatsFixtures
 import org.assertj.core.api.Assertions.*
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BatchWriteUnitTest {
 
     private val client = MockAmazonDynamoDB()
 
-    @Before
-    fun setup() {
+    init {
         CatsFixtures.createTable(client)
-    }
-
-    @After
-    fun tearDown() {
-        val mapper = CatsFixtures.mapper(client)
-        for (item in mapper.scan(DynamoDBScanExpression())) {
-            mapper.delete(item)
-        }
     }
 
     @Test

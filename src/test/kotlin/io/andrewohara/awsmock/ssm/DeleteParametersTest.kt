@@ -2,20 +2,13 @@ package io.andrewohara.awsmock.ssm
 
 import com.amazonaws.services.simplesystemsmanagement.model.DeleteParametersRequest
 import io.andrewohara.awsmock.ssm.SsmUtils.set
-import io.andrewohara.awsmock.ssm.SsmUtils.delete
 import io.andrewohara.awsmock.ssm.SsmUtils.get
 import org.assertj.core.api.Assertions.*
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DeleteParametersTest {
 
     private val client = MockAWSSimpleSystemsManagement()
-
-    @After
-    fun cleanup() {
-        client.delete("name")
-    }
 
     @Test
     fun `delete missing parameters`() {
