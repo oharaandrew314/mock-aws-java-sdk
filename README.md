@@ -71,10 +71,10 @@ public class QuickStartUnitTest {
 | ------- | ---- | ------- | 
 | S3 | v1, v2 | :heavy_check_mark: Core Functionality |
 | SQS | v1 | :heavy_check_mark: Core Functionality |
-| Dynamo DB | v1 | <ul><li>:heavy_check_mark: Core Functionality</li><li>:heavy_check_mark: Mapper</li><li>:x: query expressions</li><li>:x: conditional operations</li></ul> |
+| Dynamo DB | v1 | :heavy_check_mark: Core Functionality<br/>:heavy_check_mark: Mapper<br/>:x: query expressions<br/>:x: conditional operations<br/> |
 | SSM | v1 | :heavy_check_mark: Parameter Store |
-| Secrets Manager | v1 | <ul><li>:heavy_check_mark: Core Functionality</li><li>:x: Secret Rotation</li></ul> |
-| SNS | v1, v2 | <ul><li>:heavy_check_mark: Create/Delete Topic</li><li>:heavy_check_mark: Publish to Topic</li></ul> |
+| Secrets Manager | v1 | :heavy_check_mark: Core Functionality<br/>:x: Secret Rotation |
+| SNS | v1, v2 | :heavy_check_mark: Create/Delete Topic<br/>:heavy_check_mark: Publish to Topic |
 
 ## Samples
 
