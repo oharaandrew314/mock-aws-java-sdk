@@ -74,7 +74,7 @@ public class QuickStartUnitTest {
 | Dynamo DB | v1 | :heavy_check_mark: Core Functionality<br/>:heavy_check_mark: Mapper<br/>:x: Query Expressions<br/>:x: Conditional Operations<br/> |
 | SSM | v1 | :heavy_check_mark: Parameter Store |
 | Secrets Manager | v1 | :heavy_check_mark: Core Functionality<br/>:x: Secret Rotation |
-| SNS | v1, v2 | :heavy_check_mark: Create/Delete Topic<br/>:heavy_check_mark: Publish to Topic |
+| SNS | v1, v2 | :heavy_check_mark: Create/Delete Topic<br/>:heavy_check_mark: Publish to Topic<br/>:x: Subscriptions |
 | Cloudformation | v1, v2 | :heavy_check_mark: Exports Only |
 
 ## Samples
