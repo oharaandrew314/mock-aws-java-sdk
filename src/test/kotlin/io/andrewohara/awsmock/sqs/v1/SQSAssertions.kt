@@ -1,4 +1,4 @@
-package io.andrewohara.awsmock.sqs
+package io.andrewohara.awsmock.sqs.v1
 
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.sqs.model.*
@@ -49,13 +49,5 @@ object SQSAssertions {
         assertThat(errorCode).isEqualTo("InvalidParameterValue")
         assertThat(statusCode).isEqualTo(400)
         assertThat(errorMessage).isEqualTo("Value $value for parameter VisibilityTimeout is invalid. Reason: VisibilityTimeout must be an integer between 0 and 43200")
-    }
-
-    fun AmazonSQSException.assertIsInvalidReceiptHandleForQueue(handle: String) {
-        assertThat(this).isInstanceOf(ReceiptHandleIsInvalidException::class.java)
-        assertThat(errorType).isEqualTo(AmazonServiceException.ErrorType.Client)
-        assertThat(errorCode).isEqualTo("ReceiptHandleIsInvalid")
-        assertThat(statusCode).isEqualTo(404)
-        assertThat(errorMessage).isEqualTo("The receipt handle \"$handle\" is not valid for this queue")
     }
 }

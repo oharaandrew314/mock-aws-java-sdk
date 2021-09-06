@@ -1,12 +1,14 @@
-import software.amazon.awssdk.services.s3.S3Client
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+import com.amazonaws.services.sqs.model.CreateQueueRequest
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest
 
 fun main() {
-    val s3 = S3Client.create()
+    val sqs = AmazonSQSClientBuilder.defaultClient()
 
-    val res = s3.getObject {
-        it.bucket("121o23904583454")
-        it.key("sdofjds")
-    }
+    val request = ReceiveMessageRequest()
+        .withQueueUrl("https://sqs.us-east-1.amazonaws.com/583125843759/foo")
+        .withMaxNumberOfMessages(100)
+    val result = sqs.receiveMessage(request)
 
-    println(res)
+    println(result)
 }
