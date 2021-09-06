@@ -50,15 +50,6 @@ object SQSExceptions {
         }
     }
 
-    fun createInvalidReceiptHandleForQueueException(handle: String): ReceiptHandleIsInvalidException {
-        return ReceiptHandleIsInvalidException("The receipt handle \"$handle\" is not valid for this queue").apply {
-            errorType = AmazonServiceException.ErrorType.Client
-            errorCode = "ReceiptHandleIsInvalid"
-            statusCode = 404
-            requestId = UUID.randomUUID().toString()
-        }
-    }
-
     fun createInvalidVisibilityTimeoutException(value: Int): AmazonSQSException {
         return AmazonSQSException("Value $value for parameter VisibilityTimeout is invalid. Reason: VisibilityTimeout must be an integer between 0 and 43200").apply {
             errorType = AmazonServiceException.ErrorType.Client

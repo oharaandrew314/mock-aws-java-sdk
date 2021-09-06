@@ -2,7 +2,7 @@ package io.andrewohara.awsmock.sqs.v1
 
 import com.amazonaws.services.sqs.model.AmazonSQSException
 import com.amazonaws.services.sqs.model.CreateQueueRequest
-import io.andrewohara.awsmock.sqs.MockSqsBackend
+import io.andrewohara.awsmock.sqs.backend.MockSqsBackend
 import io.andrewohara.awsmock.sqs.MockSqsV1
 import io.andrewohara.awsmock.sqs.v1.SQSAssertions.assertIsInvalidParameter
 import io.andrewohara.awsmock.sqs.v1.SQSAssertions.assertIsQueueNameAlreadyExists
@@ -41,8 +41,8 @@ class MockSqsV1CreateQueueUnitTest {
 
         val backendQueue = backend[result.queueUrl]
         assertThat(backendQueue).isNotNull
-        assertThat(backendQueue?.defaultVisibilityTimeout).isEqualTo(Duration.ofSeconds(9001))
-        assertThat(backendQueue?.defaultDelay).isEqualTo(Duration.ofSeconds(30))
+        assertThat(backendQueue?.defaultVisibilityTimeout()).isEqualTo(Duration.ofSeconds(9001))
+        assertThat(backendQueue?.defaultDelay()).isEqualTo(Duration.ofSeconds(30))
     }
 
     @Test

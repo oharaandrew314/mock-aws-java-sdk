@@ -1,7 +1,7 @@
 package io.andrewohara.awsmock.sqs.v1
 
 import com.amazonaws.services.sqs.model.AmazonSQSException
-import io.andrewohara.awsmock.sqs.MockSqsBackend
+import io.andrewohara.awsmock.sqs.backend.MockSqsBackend
 import io.andrewohara.awsmock.sqs.MockSqsV1
 import io.andrewohara.awsmock.sqs.v1.SQSAssertions.assertIsInvalidReceiptHandle
 import io.andrewohara.awsmock.sqs.v1.SQSAssertions.assertIsInvalidVisibilityTimeout

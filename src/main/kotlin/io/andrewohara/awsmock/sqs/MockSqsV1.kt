@@ -9,13 +9,11 @@ import io.andrewohara.awsmock.sqs.SQSExceptions.createInvalidVisibilityTimeoutEx
 import io.andrewohara.awsmock.sqs.SQSExceptions.createQueueDoesNotExistException
 import io.andrewohara.awsmock.sqs.SQSExceptions.createQueueExistsException
 import io.andrewohara.awsmock.sqs.SQSExceptions.toBatchResultErrorEntry
+import io.andrewohara.awsmock.sqs.backend.MockSqsBackend
+import io.andrewohara.awsmock.sqs.backend.MockSqsQueue
 import java.time.Duration
 
 class MockSqsV1(private val backend: MockSqsBackend = MockSqsBackend()): AbstractAmazonSQS() {
-
-    companion object {
-        private val validVisibilityTimeouts = 0..43200
-    }
 
     override fun createQueue(request: CreateQueueRequest): CreateQueueResult {
         if (request.queueName == null) throw createInvalidParameterException()
@@ -49,8 +47,7 @@ class MockSqsV1(private val backend: MockSqsBackend = MockSqsBackend()): Abstrac
         val queue = backend[request.queueUrl] ?: throw createQueueDoesNotExistException()
         val message = queue.send(
             request.messageBody,
-            request.delaySeconds?.seconds(),
-            request.messageAttributes.mapValues { it.value.toMock() }
+            request.delaySeconds?.seconds()
         )
 
         return SendMessageResult().withMessageId(message.id)
@@ -64,8 +61,7 @@ class MockSqsV1(private val backend: MockSqsBackend = MockSqsBackend()): Abstrac
                 .map { entry ->
                     val message = queue.send(
                         entry.messageBody,
-                        entry.delaySeconds?.seconds(),
-                        entry.messageAttributes.mapValues { it.value.toMock() }
+                        entry.delaySeconds?.seconds()
                     )
 
                     SendMessageBatchResultEntry()
@@ -118,13 +114,12 @@ class MockSqsV1(private val backend: MockSqsBackend = MockSqsBackend()): Abstrac
     }
 
     override fun changeMessageVisibility(request: ChangeMessageVisibilityRequest): ChangeMessageVisibilityResult {
-        if (request.visibilityTimeout !in validVisibilityTimeouts) throw createInvalidVisibilityTimeoutException(request.visibilityTimeout)
         val queue = backend[request.queueUrl] ?: throw createQueueDoesNotExistException()
 
         return when (queue.updateVisibilityTimeout(request.receiptHandle, request.visibilityTimeout.seconds())) {
-            MockSqsUpdateVisibilityResult.Updated -> ChangeMessageVisibilityResult()
-            MockSqsUpdateVisibilityResult.NotFound -> throw createInvalidReceiptHandleException()
-            MockSqsUpdateVisibilityResult.InvalidTimeout -> throw createInvalidVisibilityTimeoutException(request.visibilityTimeout)
+            MockSqsQueue.UpdateVisibilityResult.Updated -> ChangeMessageVisibilityResult()
+            MockSqsQueue.UpdateVisibilityResult.NotFound -> throw createInvalidReceiptHandleException()
+            MockSqsQueue.UpdateVisibilityResult.InvalidTimeout -> throw createInvalidVisibilityTimeoutException(request.visibilityTimeout)
         }
     }
 
@@ -137,22 +132,15 @@ class MockSqsV1(private val backend: MockSqsBackend = MockSqsBackend()): Abstrac
 
         for (entry in request.entries) {
             when (queue.updateVisibilityTimeout(entry.receiptHandle, entry.visibilityTimeout.seconds())) {
-                MockSqsUpdateVisibilityResult.Updated -> successes += ChangeMessageVisibilityBatchResultEntry().withId(entry.id)
-                MockSqsUpdateVisibilityResult.NotFound -> failures += createInvalidReceiptHandleException().toBatchResultErrorEntry(entry.id)
-                MockSqsUpdateVisibilityResult.InvalidTimeout -> failures += createInvalidVisibilityTimeoutException(entry.visibilityTimeout).toBatchResultErrorEntry(entry.id)
+                MockSqsQueue.UpdateVisibilityResult.Updated -> successes += ChangeMessageVisibilityBatchResultEntry().withId(entry.id)
+                MockSqsQueue.UpdateVisibilityResult.NotFound -> failures += createInvalidReceiptHandleException().toBatchResultErrorEntry(entry.id)
+                MockSqsQueue.UpdateVisibilityResult.InvalidTimeout -> failures += createInvalidVisibilityTimeoutException(entry.visibilityTimeout).toBatchResultErrorEntry(entry.id)
             }
         }
 
         return ChangeMessageVisibilityBatchResult()
                 .withFailed(failures)
                 .withSuccessful(successes)
-    }
-
-    private fun MessageAttributeValue.toMock() = when(dataType) {
-        "String" -> if (stringListValues != null) MockSqsAttribute.TextList(stringListValues) else MockSqsAttribute.Text(stringValue)
-        "Number" -> if (stringListValues != null) MockSqsAttribute.NumberList(stringListValues.map { it.toLong() }) else MockSqsAttribute.Number(stringValue.toLong())
-        "Binary" -> if (binaryListValues != null) MockSqsAttribute.BinaryList(binaryListValues) else MockSqsAttribute.Binary(binaryValue)
-        else -> TODO()
     }
 
     private fun Int.seconds() = Duration.ofSeconds(toLong())

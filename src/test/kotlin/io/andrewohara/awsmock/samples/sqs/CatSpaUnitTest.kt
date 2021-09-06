@@ -1,7 +1,7 @@
 package io.andrewohara.awsmock.samples.sqs
 
-import io.andrewohara.awsmock.sqs.MockSqsBackend
-import io.andrewohara.awsmock.sqs.MockSqsV1
+import io.andrewohara.awsmock.sqs.backend.MockSqsBackend
+import io.andrewohara.awsmock.sqs.MockSqsV2
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -9,7 +9,7 @@ class CatSpaUnitTest {
 
     private val backend = MockSqsBackend()
     private val queue = backend.create("grooming")!!
-    private val testObj = CatSpa(MockSqsV1(backend), queue.url)
+    private val testObj = CatSpa(MockSqsV2(backend), queue.url)
 
     @Test
     fun `start appointment - empty backlog`() {

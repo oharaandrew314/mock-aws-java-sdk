@@ -2,7 +2,7 @@ package io.andrewohara.awsmock.sqs.v1
 
 import com.amazonaws.services.sqs.model.AmazonSQSException
 import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry
-import io.andrewohara.awsmock.sqs.MockSqsBackend
+import io.andrewohara.awsmock.sqs.backend.MockSqsBackend
 import io.andrewohara.awsmock.sqs.MockSqsV1
 import io.andrewohara.awsmock.sqs.v1.SQSAssertions.assertIsEmptyBatch
 import io.andrewohara.awsmock.sqs.v1.SQSAssertions.assertIsQueueDoesNotExist

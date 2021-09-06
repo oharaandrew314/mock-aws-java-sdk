@@ -64,7 +64,7 @@ class GameServiceTest {
 | Service | SDKs | Support |
 | ------- | ---- | ------- | 
 | S3 | v1, v2 | :heavy_check_mark: Core Functionality<br/>:x: Object Metadata<br/>:x: Permissions |
-| SQS | v1 | :heavy_check_mark: Core Functionality |
+| SQS | v1, v2 | :heavy_check_mark: Core Functionality<br/>:x: Message Attributes |
 | Dynamo DB | v1 | :heavy_check_mark: Core Functionality<br/>:heavy_check_mark: Mapper<br/>:x: Query Expressions<br/>:x: Conditional Operations<br/> |
 | SSM | v1 | :heavy_check_mark: Parameter Store |
 | Secrets Manager | v1 | :heavy_check_mark: Core Functionality<br/>:x: Secret Rotation |
@@ -86,10 +86,4 @@ you should update them to allow the SDK to be injected;
 your main runner will inject real SDKs, and your tests will inject the mocks.
 
 Since the AWS resources created in the mocks are in-memory, they will not persist,
-and they will not be shared between clients.
-However, all the mocks with support for the v2 sdk will allow you to inject the backend into the client,
-allowing it to be shared between clients.
-
-## Gotchas
-
-- most services will not yet respect the passage of time
+and they will only be shared between clients if you inject the same backend into them.
