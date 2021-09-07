@@ -1,25 +1,28 @@
-package io.andrewohara.awsmock.secretsmanager
+package io.andrewohara.awsmock.secretsmanager.v1
 
 import com.amazonaws.services.secretsmanager.model.*
-import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertCantGiveBothTypes
-import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertParamNotNullable
-import io.andrewohara.awsmock.secretsmanager.SecretsUtils.assertIsCorrect
-import io.andrewohara.awsmock.secretsmanager.SecretsUtils.cannotCreateDeletedSecret
+import io.andrewohara.awsmock.secretsmanager.MockSecretsManagerV1
+import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.assertCantGiveBothTypes
+import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.assertParamNotNullable
+import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.assertIsCorrect
+import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.cannotCreateDeletedSecret
+import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsManagerBackend
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
 import java.util.*
 
-class CreateSecretTest {
+class MockSecretsV1CreateSecretTest {
 
-    private val client = MockAWSSecretsManager()
+    private val backend = MockSecretsManagerBackend()
+    private val client = MockSecretsManagerV1(backend)
     private val name = UUID.randomUUID().toString()
 
     @Test
     fun `create secret without any params`() {
         val exception = catchThrowableOfType(
-                { client.createSecret(CreateSecretRequest()) },
-                AWSSecretsManagerException::class.java
+            { client.createSecret(CreateSecretRequest()) },
+            AWSSecretsManagerException::class.java
         )
 
         exception.assertParamNotNullable("name")
@@ -27,14 +30,17 @@ class CreateSecretTest {
 
     @Test
     fun `create secret without content`() {
-        client.createSecret(CreateSecretRequest().withName(name))
+        val result = client.createSecret(CreateSecretRequest().withName(name))
+
+        assertThat(result.name).isEqualTo(name)
+        backend[result.name]!!.versions().isEmpty()
     }
 
     @Test
     fun `create secret without name`() {
         val exception = catchThrowableOfType(
-                { client.createSecret(CreateSecretRequest().withSecretString("bar")) },
-                AWSSecretsManagerException::class.java
+            { client.createSecret(CreateSecretRequest().withSecretString("bar")) },
+            AWSSecretsManagerException::class.java
         )
 
         exception.assertParamNotNullable("name")
@@ -42,7 +48,8 @@ class CreateSecretTest {
 
     @Test
     fun `create binary secret`() {
-        val resp = client.createSecret(CreateSecretRequest()
+        val resp = client.createSecret(
+            CreateSecretRequest()
                 .withName(name)
                 .withSecretBinary(ByteBuffer.wrap("bar".toByteArray()))
         )
@@ -54,7 +61,8 @@ class CreateSecretTest {
 
     @Test
     fun `create string secret`() {
-        val resp = client.createSecret(CreateSecretRequest()
+        val resp = client.createSecret(
+            CreateSecretRequest()
                 .withName(name)
                 .withSecretString("bar")
         )
@@ -66,7 +74,8 @@ class CreateSecretTest {
 
     @Test
     fun `create string secret with kms key`() {
-        client.createSecret(CreateSecretRequest()
+        client.createSecret(
+            CreateSecretRequest()
                 .withName(name)
                 .withSecretString("bar")
                 .withKmsKeyId("secretKey")
@@ -78,8 +87,8 @@ class CreateSecretTest {
         client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar"))
 
         val exception = catchThrowableOfType(
-                { client.createSecret(CreateSecretRequest().withName(name).withSecretString("baz")) },
-                ResourceExistsException::class.java
+            { client.createSecret(CreateSecretRequest().withName(name).withSecretString("baz")) },
+            ResourceExistsException::class.java
         )
 
         exception.assertIsCorrect(name)
@@ -91,8 +100,8 @@ class CreateSecretTest {
         client.deleteSecret(DeleteSecretRequest().withSecretId(name))
 
         val exception = catchThrowableOfType(
-                { client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar")) },
-                InvalidRequestException::class.java
+            { client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar")) },
+            InvalidRequestException::class.java
         )
 
         exception.cannotCreateDeletedSecret()
@@ -101,8 +110,13 @@ class CreateSecretTest {
     @Test
     fun `create secret with string and binary content`() {
         val exception = catchThrowableOfType(
-                { client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar").withSecretBinary(ByteBuffer.wrap("baz".toByteArray()))) },
-                InvalidParameterException::class.java
+            {
+                client.createSecret(
+                    CreateSecretRequest().withName(name).withSecretString("bar")
+                        .withSecretBinary(ByteBuffer.wrap("baz".toByteArray()))
+                )
+            },
+            InvalidParameterException::class.java
         )
 
         exception.assertCantGiveBothTypes()
@@ -110,7 +124,8 @@ class CreateSecretTest {
 
     @Test
     fun `create secret with tags`() {
-        client.createSecret(CreateSecretRequest()
+        client.createSecret(
+            CreateSecretRequest()
                 .withName(name)
                 .withSecretString("bar")
                 .withTags(Tag().withKey("Service").withValue("cats"))

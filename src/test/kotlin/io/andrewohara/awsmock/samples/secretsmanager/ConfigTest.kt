@@ -1,13 +1,13 @@
 package io.andrewohara.awsmock.samples.secretsmanager
 
 import com.amazonaws.services.secretsmanager.model.CreateSecretRequest
-import io.andrewohara.awsmock.secretsmanager.MockAWSSecretsManager
+import io.andrewohara.awsmock.secretsmanager.MockSecretsManagerV1
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 
 class ConfigTest {
 
-    private val client = MockAWSSecretsManager()
+    private val client = MockSecretsManagerV1()
 
     @Test
     fun `load config`() {

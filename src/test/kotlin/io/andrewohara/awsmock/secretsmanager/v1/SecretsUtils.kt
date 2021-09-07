@@ -1,4 +1,4 @@
-package io.andrewohara.awsmock.secretsmanager
+package io.andrewohara.awsmock.secretsmanager.v1
 
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.secretsmanager.AWSSecretsManager
