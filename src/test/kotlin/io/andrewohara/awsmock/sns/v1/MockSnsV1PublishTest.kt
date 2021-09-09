@@ -57,10 +57,10 @@ class MockSnsV1PublishTest {
     fun `publish message - without subject`() {
         val topic = backend.createTopic("foo")
 
-        val result = client.publish(topic.arn, "bar")
+        client.publish(topic.arn, "bar")
 
         assertThat(topic.messages()).containsExactly(
-            MockSnsMessage(subject = null, message = "bar", messageId = result.messageId)
+            MockSnsMessage(messageId = "foo:0", subject = null, message = "bar")
         )
     }
 
@@ -68,14 +68,15 @@ class MockSnsV1PublishTest {
     fun `publish message - with subject`() {
         val topic = backend.createTopic("foo")
 
-        val request = PublishRequest()
+        client.publish(
+            PublishRequest()
             .withTopicArn(topic.arn)
             .withMessage("bar")
             .withSubject("stuff")
-        val result = client.publish(request)
+        )
 
         assertThat(topic.messages()).containsExactly(
-            MockSnsMessage(subject = "stuff", message = "bar", messageId = result.messageId)
+            MockSnsMessage(messageId = "foo:0", subject = "stuff", message = "bar")
         )
     }
 }

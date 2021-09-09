@@ -1,6 +1,7 @@
 package io.andrewohara.awsmock.samples.sns
 
 import io.andrewohara.awsmock.sns.MockSnsBackend
+import io.andrewohara.awsmock.sns.MockSnsMessage
 import io.andrewohara.awsmock.sns.MockSnsV1
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -14,8 +15,8 @@ class GameServiceTest {
     fun `create game`() {
         val gameId = testObj.create("Satisfactory")
 
-        assertThat(gameEventsTopic.messages())
-            .hasSize(1)
-            .extracting<String> { it.message }.containsExactly("id=$gameId, type=create, name=Satisfactory")
+        assertThat(gameEventsTopic.messages()).containsExactly(
+            MockSnsMessage(messageId = "releaseTopic:0", subject = null, message = "id=$gameId, type=create, name=Satisfactory")
+        )
     }
 }

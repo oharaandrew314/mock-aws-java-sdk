@@ -1,7 +1,5 @@
 package io.andrewohara.awsmock.sns
 
-import java.util.*
-
 class MockSnsBackend {
 
     private val topics = mutableSetOf<MockSnsTopic>()
@@ -19,8 +17,6 @@ class MockSnsBackend {
     }
 
     fun deleteTopic(arn: String) = topics.removeIf { it.arn == arn }
-
-    fun clear() = topics.clear()
 }
 
 class MockSnsTopic(
@@ -31,14 +27,14 @@ class MockSnsTopic(
     fun messages() = messages.toList()
 
     fun publish(message: String, subject: String?) = MockSnsMessage(
-        message = message,
+        messageId = "$name:${messages.size}",
         subject = subject,
-        messageId = UUID.randomUUID().toString()
+        message = message
     ).also { messages += it }
 }
 
 data class MockSnsMessage(
+    val messageId: String,
     val subject: String?,
-    val message: String,
-    val messageId: String
+    val message: String
 )
