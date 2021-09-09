@@ -4,7 +4,7 @@ import java.time.Clock
 import java.time.Duration
 import java.util.*
 
-class MockSqsQueue internal constructor(
+class MockSqsQueue(
     private val clock: Clock,
     val name: String,
     val url: String,

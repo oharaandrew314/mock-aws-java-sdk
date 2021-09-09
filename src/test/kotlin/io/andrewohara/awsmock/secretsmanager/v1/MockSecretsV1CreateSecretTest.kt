@@ -2,11 +2,13 @@ package io.andrewohara.awsmock.secretsmanager.v1
 
 import com.amazonaws.services.secretsmanager.model.*
 import io.andrewohara.awsmock.secretsmanager.MockSecretsManagerV1
+import io.andrewohara.awsmock.secretsmanager.backend.MockSecret
+import io.andrewohara.awsmock.secretsmanager.backend.MockSecretValue
 import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.assertCantGiveBothTypes
 import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.assertParamNotNullable
 import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.assertIsCorrect
 import io.andrewohara.awsmock.secretsmanager.v1.SecretsUtils.cannotCreateDeletedSecret
-import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsManagerBackend
+import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsBackend
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
@@ -14,7 +16,7 @@ import java.util.*
 
 class MockSecretsV1CreateSecretTest {
 
-    private val backend = MockSecretsManagerBackend()
+    private val backend = MockSecretsBackend()
     private val client = MockSecretsManagerV1(backend)
     private val name = UUID.randomUUID().toString()
 
@@ -47,44 +49,37 @@ class MockSecretsV1CreateSecretTest {
     }
 
     @Test
-    fun `create binary secret`() {
-        val resp = client.createSecret(
-            CreateSecretRequest()
-                .withName(name)
-                .withSecretBinary(ByteBuffer.wrap("bar".toByteArray()))
-        )
-
-        assertThat(resp.arn).isEqualTo("arn:mockaws:secretsmanager:region:account-id:$name")
-        assertThat(resp.name).isEqualTo(name)
-        assertThat(resp.versionId).isNotEmpty()
-    }
-
-    @Test
-    fun `create string secret`() {
+    fun `create secret`() {
         val resp = client.createSecret(
             CreateSecretRequest()
                 .withName(name)
                 .withSecretString("bar")
+                .withTags(Tag().withKey("key").withValue("value"))
         )
 
-        assertThat(resp.arn).isEqualTo("arn:mockaws:secretsmanager:region:account-id:$name")
-        assertThat(resp.name).isEqualTo(name)
-        assertThat(resp.versionId).isNotEmpty()
-    }
-
-    @Test
-    fun `create string secret with kms key`() {
-        client.createSecret(
-            CreateSecretRequest()
+        assertThat(resp).isEqualTo(
+            CreateSecretResult()
+                .withARN("arn:mockaws:secretsmanager:region:account-id:$name")
                 .withName(name)
-                .withSecretString("bar")
-                .withKmsKeyId("secretKey")
+                .withVersionId("0")
+        )
+
+        assertThat(backend[name]).isEqualTo(
+            MockSecret(
+                name = name,
+                description = null,
+                tags = mapOf("key" to "value"),
+                kmsKeyId = "defaultKey",
+                history = mutableListOf(
+                    MockSecretValue("0", "bar", null, listOf("AWSCURRENT"))
+                )
+            )
         )
     }
 
     @Test
     fun `create secret that already exists`() {
-        client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar"))
+        backend.create(name, secretString = "bar")
 
         val exception = catchThrowableOfType(
             { client.createSecret(CreateSecretRequest().withName(name).withSecretString("baz")) },
@@ -96,8 +91,8 @@ class MockSecretsV1CreateSecretTest {
 
     @Test
     fun `can't create secret that was scheduled for deletion`() {
-        client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar"))
-        client.deleteSecret(DeleteSecretRequest().withSecretId(name))
+        backend.create(name, secretString = "bar")
+        backend.deleteSecret(name)
 
         val exception = catchThrowableOfType(
             { client.createSecret(CreateSecretRequest().withName(name).withSecretString("bar")) },
@@ -120,15 +115,5 @@ class MockSecretsV1CreateSecretTest {
         )
 
         exception.assertCantGiveBothTypes()
-    }
-
-    @Test
-    fun `create secret with tags`() {
-        client.createSecret(
-            CreateSecretRequest()
-                .withName(name)
-                .withSecretString("bar")
-                .withTags(Tag().withKey("Service").withValue("cats"))
-        )
     }
 }

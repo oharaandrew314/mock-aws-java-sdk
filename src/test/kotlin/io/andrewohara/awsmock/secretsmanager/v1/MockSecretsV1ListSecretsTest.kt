@@ -2,19 +2,19 @@ package io.andrewohara.awsmock.secretsmanager.v1
 
 import com.amazonaws.services.secretsmanager.model.*
 import io.andrewohara.awsmock.secretsmanager.MockSecretsManagerV1
-import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsManagerBackend
+import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsBackend
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class MockSecretsV1ListSecretsTest {
 
-    private val backend = MockSecretsManagerBackend()
+    private val backend = MockSecretsBackend()
     private val client = MockSecretsManagerV1(backend)
 
     @Test
     fun `list secrets`() {
-        val secret1 = backend.create("foo", secretString = "bar")
-        val secret2 = backend.create("toll", secretString = "troll", kmsKeyId = "secretKey", tags = mapOf("Service" to "trolls"))
+        val (secret1, _) = backend.create("foo", secretString = "bar")
+        val secret2 = backend.create("toll", secretString = "troll", kmsKeyId = "secretKey", tags = mapOf("Service" to "trolls")).first
 
         val resp = client.listSecrets(ListSecretsRequest())
 

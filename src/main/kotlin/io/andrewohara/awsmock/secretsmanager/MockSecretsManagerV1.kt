@@ -4,23 +4,22 @@ import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.secretsmanager.AbstractAWSSecretsManager
 import com.amazonaws.services.secretsmanager.model.*
 import io.andrewohara.awsmock.core.MockAwsException
-import io.andrewohara.awsmock.core.toV1
-import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsManagerBackend
+import io.andrewohara.awsmock.secretsmanager.backend.MockSecretsBackend
 import java.util.*
 
 class MockSecretsManagerV1(
-    private val backend: MockSecretsManagerBackend = MockSecretsManagerBackend()
+    private val backend: MockSecretsBackend = MockSecretsBackend()
 ) : AbstractAWSSecretsManager() {
 
     override fun createSecret(request: CreateSecretRequest): CreateSecretResult {
-        val secret = try {
+        val (secret, version) = try {
             backend.create(
                 name = request.name,
                 description = request.description,
                 tags = request.tags?.associate { it.key to it.value },
                 kmsKeyId = request.kmsKeyId,
                 secretString = request.secretString,
-                secretBinary = request.secretBinary
+                secretBinary = request.secretBinary,
             )
         } catch (e: MockAwsException) {
             throw e.toV1()
@@ -29,7 +28,7 @@ class MockSecretsManagerV1(
         return CreateSecretResult()
             .withARN(secret.arn)
             .withName(secret.name)
-            .withVersionId(secret.latest()?.versionId)
+            .withVersionId(version?.versionId)
     }
 
     override fun describeSecret(request: DescribeSecretRequest): DescribeSecretResult {
@@ -104,7 +103,7 @@ class MockSecretsManagerV1(
     }
 
     override fun putSecretValue(request: PutSecretValueRequest): PutSecretValueResult {
-        val secret = try {
+        val (secret, version) = try {
             backend.putSecretValue(
                 secretId = request.secretId,
                 secretString = request.secretString,
@@ -117,8 +116,8 @@ class MockSecretsManagerV1(
         return PutSecretValueResult()
             .withARN(secret.arn)
             .withName(secret.name)
-            .withVersionId(secret.latest()?.versionId)
-            .withVersionStages(secret.latest()?.stages)
+            .withVersionId(version?.versionId)
+            .withVersionStages(version?.stages)
     }
 
     override fun listSecretVersionIds(request: ListSecretVersionIdsRequest): ListSecretVersionIdsResult {
@@ -151,7 +150,7 @@ class MockSecretsManagerV1(
         else -> AmazonServiceException(message)
     }.also { v1 ->
         v1.requestId = UUID.randomUUID().toString()
-        v1.errorType = errorType.toV1()
+        v1.errorType = AmazonServiceException.ErrorType.Client
         v1.errorCode = errorCode
         v1.statusCode = statusCode
     }
