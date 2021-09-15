@@ -4,7 +4,10 @@
 
 # mock-aws-java-sdk
 
-A test library providing mocked versions of AWS SDK clients for the JVM.
+Provides mocked versions of the Java AWS SDK clients, for use in unit tests.
+Supporting:
+- V1 Java SDK
+- V2 Java SDK
 
 ## Requirements
 
