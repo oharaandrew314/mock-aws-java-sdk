@@ -1,38 +1,28 @@
 package io.andrewohara.awsmock.samples.ssm
 
-import com.amazonaws.services.simplesystemsmanagement.model.ParameterType
-import com.amazonaws.services.simplesystemsmanagement.model.PutParameterRequest
-import io.andrewohara.awsmock.ssm.MockAWSSimpleSystemsManagement
-import org.assertj.core.api.Assertions
+import io.andrewohara.awsmock.ssm.MockSsmV1
+import io.andrewohara.awsmock.ssm.backend.MockSsmBackend
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class ConfigTest {
 
-    private val client = MockAWSSimpleSystemsManagement()
+    private val backend = MockSsmBackend()
+    private val client = MockSsmV1(backend)
 
     @Test
     fun `load config`() {
         // setup parameters
-        client.putParameter(
-                PutParameterRequest()
-                        .withName("catsHost")
-                        .withType(ParameterType.String)
-                        .withValue("https://cats.meow")
-        )
-        client.putParameter(
-                PutParameterRequest()
-                        .withName("catsApiKey")
-                        .withType(ParameterType.SecureString)
-                        .withValue("hunter2")
-        )
+        backend["catsHost"] = "https://cats.meow"
+        backend.secure("catsApiKey", "hunter2")
 
         // perform test
         val config = Config.loadFromSsm(client)
 
-        // verify state
-        Assertions.assertThat(config).isEqualTo(Config(
-                catsHost = "https://cats.meow",
-                catsApiKey = "hunter2"
-        ))
+        // verify
+        config shouldBe Config(
+            catsHost = "https://cats.meow",
+            catsApiKey = "hunter2"
+        )
     }
 }
