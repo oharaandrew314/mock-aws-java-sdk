@@ -1,4 +1,4 @@
-package io.andrewohara.awsmock.ssm.backend
+ package io.andrewohara.awsmock.ssm.backend
 
 import io.andrewohara.awsmock.core.MockAwsException
 
@@ -37,11 +37,6 @@ class MockSsmBackend {
         parameters += parameter
 
         return parameter
-    }
-
-    fun getHistory(name: String): List<MockSsmParameter.Value> {
-        val param = get(name) ?: throw paramNotFound(name)
-        return param.history()
     }
 
     fun delete(name: String) {

@@ -106,26 +106,4 @@ class MockSsmV1GetParameterHistoryTest {
                 .withVersion(2)
         )
     }
-
-    @Test
-    fun `get history for string that changed to secure string`() {
-        val param = backend.set("foo", "bar")
-        param.add(MockSsmParameter.Type.Secure, "baz")
-
-        val result = client.getParameterHistory(GetParameterHistoryRequest().withName("foo").withWithDecryption(true))
-
-        result.parameters.shouldContainExactly(
-            ParameterHistory()
-                .withName("foo")
-                .withType(ParameterType.String)
-                .withValue("bar")
-                .withVersion(1),
-            ParameterHistory()
-                .withName("foo")
-                .withType(ParameterType.SecureString)
-                .withValue("baz")
-                .withKeyId("defaultKey")
-                .withVersion(2)
-        )
-    }
 }

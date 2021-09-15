@@ -92,7 +92,7 @@ class MockSsmV1(private val backend: MockSsmBackend = MockSsmBackend()): Abstrac
 
     override fun getParameterHistory(request: GetParameterHistoryRequest): GetParameterHistoryResult {
         val history = try {
-            backend.getHistory(request.name)
+            backend.getParameter(request.name).history()
                 .map { it.toHistory(request.name, request.withDecryption) }
         } catch (e: MockAwsException) {
             throw e.toV1()

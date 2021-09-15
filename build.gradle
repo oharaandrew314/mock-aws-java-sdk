@@ -11,29 +11,25 @@ repositories {
     mavenCentral()
 }
 
-ext {
-    ver = [
-        aws: '1.11.309+',
-        awsV2: '2.17.34+'
-    ]
-}
-
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: ver.aws
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: ver.aws
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: ver.aws
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-ssm', version: ver.aws
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager', version: ver.aws
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sns', version: ver.aws
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-cloudformation', version: ver.aws
+    compileOnly platform("com.amazonaws:aws-java-sdk-bom:1.11.309+")
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-s3'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sqs'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-ssm'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sns'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-cloudformation'
 
-    compileOnly "software.amazon.awssdk:s3:${ver.awsV2}"
-    compileOnly "software.amazon.awssdk:sns:${ver.awsV2}"
-    compileOnly "software.amazon.awssdk:cloudformation:${ver.awsV2}"
-    compileOnly "software.amazon.awssdk:sqs:${ver.awsV2}"
-    compileOnly "software.amazon.awssdk:secretsmanager:${ver.awsV2}"
+    compileOnly platform("software.amazon.awssdk:bom:2.17.34+")
+    compileOnly "software.amazon.awssdk:s3"
+    compileOnly "software.amazon.awssdk:sns"
+    compileOnly "software.amazon.awssdk:cloudformation"
+    compileOnly "software.amazon.awssdk:sqs"
+    compileOnly "software.amazon.awssdk:secretsmanager"
+    compileOnly "software.amazon.awssdk:ssm"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
