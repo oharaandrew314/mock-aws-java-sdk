@@ -1,13 +1,13 @@
 package io.andrewohara.awsmock.samples.dynamodb
 
 import com.amazonaws.services.dynamodbv2.model.*
-import io.andrewohara.awsmock.dynamodb.MockAmazonDynamoDB
+import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class DynamoGamesDaoIntegrationTest {
 
-    private val client = MockAmazonDynamoDB()
+    private val client = MockDynamoDbV1()
     private val testObj = DynamoGamesDao("games", client)
 
     init {
