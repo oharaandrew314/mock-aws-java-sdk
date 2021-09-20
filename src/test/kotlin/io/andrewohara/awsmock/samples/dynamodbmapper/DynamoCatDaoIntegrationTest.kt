@@ -2,59 +2,61 @@ package io.andrewohara.awsmock.samples.dynamodbmapper
 
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
-import org.assertj.core.api.Assertions.*
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class DynamoCatDaoIntegrationTest {
 
-    private val testObj = DynamoCatsDao("cats", MockDynamoDbV1())
+    private val backend = MockDynamoBackend()
 
-    init {
-        testObj.mapper.createTable(ProvisionedThroughput(1, 1))
+    private val mapper = DynamoCat.mapper(MockDynamoDbV1(backend)).also {
+        it.createTable(ProvisionedThroughput(1, 1))
+    }
+
+    val testObj = DynamoCatsDao(mapper)
+
+    object Fixtures {
+        val toggles = DynamoCat(ownerId = 1, catName = "Toggles", gender = "female")
+        val smokey = DynamoCat(ownerId = 2, catName = "Smokey", gender = "female")
+        val bandit = DynamoCat(ownerId = 2, catName = "Bandit", gender = "male")
     }
 
     @Test
     fun `get missing cat`() {
-        assertThat(testObj[1, "Toggles"]).isNull()
+        testObj[1, "Toggles"].shouldBeNull()
     }
 
     @Test
-    fun `save and get cat`() {
-        val toggles = DynamoCat(ownerId = 1, catName = "Toggles", gender = "female")
-        testObj.save(toggles)
+    fun `get cat`() {
+        mapper.save(Fixtures.toggles)
 
-        assertThat(testObj[1, "Toggles"]).isEqualTo(toggles)
+        testObj[1, "Toggles"] shouldBe Fixtures.toggles
     }
 
     @Test
     fun `delete cat`() {
-        val toggles = DynamoCat(ownerId = 1, catName = "Toggles", gender = "female")
-        testObj.save(toggles)
+        mapper.save(Fixtures.toggles)
 
-        testObj.delete(toggles)
+        testObj.delete(Fixtures.toggles)
 
-        assertThat(testObj[1, "Toggles"]).isNull()
+        mapper.load(1, "Toggles").shouldBeNull()
     }
 
     @Test
     fun `delete missing cat`() {
-        val toggles = DynamoCat(ownerId = 1, catName = "Toggles", gender = "female")
-        testObj.delete(toggles)
-    }
-
-    @Test
-    fun `list by owner with no cats`() {
-        assertThat(testObj.list(1)).isEmpty()
+        testObj.delete(Fixtures.toggles)
     }
 
     @Test
     fun `list by owner`() {
-        val smokey = DynamoCat(ownerId = 2, catName = "Smokey", gender = "female")
-        testObj.save(smokey)
+        mapper.save(Fixtures.smokey)
+        mapper.save(Fixtures.bandit)
 
-        val bandit = DynamoCat(ownerId = 2, catName = "Bandit", gender = "male")
-        testObj.save(bandit)
-
-        assertThat(testObj.list(2)).containsExactlyInAnyOrder(smokey, bandit)
+        testObj.list(2).shouldContainExactlyInAnyOrder(
+            Fixtures.smokey, Fixtures.bandit
+        )
     }
 }

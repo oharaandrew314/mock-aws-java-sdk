@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.dynamodb.backend
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 
-data class MockValue(
+data class MockDynamoValue(
     val s: String? = null,
     val n: BigDecimal? = null,
     val b: ByteBuffer? = null,
@@ -13,12 +13,12 @@ data class MockValue(
     val ns: Set<BigDecimal>? = null,
     val bs: Set<ByteBuffer>? = null,
 
-    val list: List<MockValue>? = null,
+    val list: List<MockDynamoValue>? = null,
     val map: MockDynamoItem? = null
-): Comparable<MockValue> {
+): Comparable<MockDynamoValue> {
     companion object {
-        operator fun invoke(n: Number): MockValue = MockValue(n = BigDecimal(n.toString()))
-        operator fun invoke(ns: Set<Number>): MockValue = MockValue(ns = ns.map { BigDecimal(it.toString()) }.toSet())
+        operator fun invoke(n: Number): MockDynamoValue = MockDynamoValue(n = BigDecimal(n.toString()))
+        operator fun invoke(ns: Set<Number>): MockDynamoValue = MockDynamoValue(ns = ns.map { BigDecimal(it.toString()) }.toSet())
     }
 
     val type: MockDynamoAttribute.Type = when {
@@ -37,14 +37,14 @@ data class MockValue(
         else -> MockDynamoAttribute.Type.Null
     }
 
-    override fun compareTo(other: MockValue) = when {
+    override fun compareTo(other: MockDynamoValue) = when {
         s != null && other.s != null -> s.compareTo(other.s)
         n != null && other.n != null -> n.compareTo(other.n)
         b != null && other.b != null -> b.compareTo(other.b)
         else -> 0
     }
 
-    operator fun contains(other: MockValue) = when {
+    operator fun contains(other: MockDynamoValue) = when {
         s != null && other.s != null -> other.s in s
         ss != null && other.s != null -> other.s in ss
         ns != null && other.n != null -> other.n in ns
@@ -53,12 +53,12 @@ data class MockValue(
         else -> false
     }
 
-    operator fun rangeTo(other: MockValue) = object: ClosedRange<MockValue> {
+    operator fun rangeTo(other: MockDynamoValue) = object: ClosedRange<MockDynamoValue> {
         override val endInclusive = other
-        override val start = this@MockValue
+        override val start = this@MockDynamoValue
     }
 
-    fun startsWith(other: MockValue) = when {
+    fun startsWith(other: MockDynamoValue) = when {
         s != null && other.s != null -> s.startsWith(other.s)
         b != null && other.b != null -> false // TODO implement
         else -> false

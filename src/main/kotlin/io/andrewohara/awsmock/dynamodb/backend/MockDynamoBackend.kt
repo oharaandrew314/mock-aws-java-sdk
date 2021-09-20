@@ -34,9 +34,9 @@ class MockDynamoBackend(private val clock: Clock = Clock.systemUTC()) {
     fun createTable(
         name: String,
         hashKey: MockDynamoAttribute,
-        rangeKey: MockDynamoAttribute?,
-        globalIndices: Collection<MockDynamoSchema>,
-        localIndices: Collection<MockDynamoSchema>
+        rangeKey: MockDynamoAttribute? = null,
+        globalIndices: Collection<MockDynamoSchema> = emptyList(),
+        localIndices: Collection<MockDynamoSchema> = emptyList()
     ): MockDynamoTable {
         get(name)?.let { throw resourceInUse(name) }
 

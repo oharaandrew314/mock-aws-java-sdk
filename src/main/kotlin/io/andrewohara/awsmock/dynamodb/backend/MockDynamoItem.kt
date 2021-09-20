@@ -2,8 +2,8 @@ package io.andrewohara.awsmock.dynamodb.backend
 
 import java.lang.IllegalArgumentException
 
-data class MockDynamoItem(val attributes: Map<String, MockValue>) {
-    constructor(vararg attributes: Pair<String, MockValue>): this(attributes.toMap())
+data class MockDynamoItem(val attributes: Map<String, MockDynamoValue>) {
+    constructor(vararg attributes: Pair<String, MockDynamoValue>): this(attributes.toMap())
     /**
      * TODO this needs to be further implemented
      * e.g. for set types
@@ -19,7 +19,7 @@ data class MockDynamoItem(val attributes: Map<String, MockValue>) {
                     val current = attr.n ?: throw IllegalArgumentException("target attribute must be N") // TODO throw correct error
                     val increment = value.value?.n ?: throw IllegalArgumentException("update attribute doesn't match target attribute")  // TODO throw correct error
 
-                    attributes[key] = MockValue(current + increment)
+                    attributes[key] = MockDynamoValue(current + increment)
                 }
                 MockDynamoUpdate.Type.Put-> {
                     val update = value.value ?: throw IllegalArgumentException("no value to put") // TODO throw correct error
@@ -34,7 +34,7 @@ data class MockDynamoItem(val attributes: Map<String, MockValue>) {
         return MockDynamoItem(attributes)
     }
 
-    fun plus(vararg values: Pair<String, MockValue>) = MockDynamoItem(
+    fun plus(vararg values: Pair<String, MockDynamoValue>) = MockDynamoItem(
         *attributes.map { it.key to it.value }.toTypedArray(),
         *values
     )
@@ -47,7 +47,7 @@ data class MockDynamoItem(val attributes: Map<String, MockValue>) {
 
 data class MockDynamoUpdate(
     val action: Type,
-    val value: MockValue?
+    val value: MockDynamoValue?
 ) {
     enum class Type { Add, Put, Delete }
 }

@@ -18,7 +18,7 @@ class UpdateItemTest {
     }
 
     companion object {
-        private val garrusKey = MockDynamoItem("ownerId" to DynamoFixtures.meOwnerId, "name" to MockValue(s = "Garrus"))
+        private val garrusKey = MockDynamoItem("ownerId" to DynamoFixtures.meOwnerId, "name" to MockDynamoValue(s = "Garrus"))
     }
 
     @Test
@@ -61,12 +61,12 @@ class UpdateItemTest {
 
     @Test
     fun `put value to missing item`() {
-        val expected = garrusKey.plus("awesomeness" to MockValue(9001))
+        val expected = garrusKey.plus("awesomeness" to MockDynamoValue(9001))
 
         cats.update(
             garrusKey,
             mapOf(
-                "awesomeness" to MockDynamoUpdate(action = MockDynamoUpdate.Type.Put, value = MockValue(9001))
+                "awesomeness" to MockDynamoUpdate(action = MockDynamoUpdate.Type.Put, value = MockDynamoValue(9001))
             )
         ) shouldBe expected
 
@@ -75,12 +75,12 @@ class UpdateItemTest {
 
     @Test
     fun `put value to existing item`() {
-        val expected = DynamoFixtures.toggles.plus("awesomeness" to MockValue(1337))
+        val expected = DynamoFixtures.toggles.plus("awesomeness" to MockDynamoValue(1337))
 
         cats.update(
             DynamoFixtures.togglesKey,
             mapOf(
-                "awesomeness" to MockDynamoUpdate(action = MockDynamoUpdate.Type.Put, value = MockValue(1337))
+                "awesomeness" to MockDynamoUpdate(action = MockDynamoUpdate.Type.Put, value = MockDynamoValue(1337))
             )
         ) shouldBe expected
 
@@ -89,12 +89,12 @@ class UpdateItemTest {
 
     @Test
     fun `increment value on existing item`() {
-        val expected = DynamoFixtures.me.plus("pets" to MockValue(2))
+        val expected = DynamoFixtures.me.plus("pets" to MockDynamoValue(2))
 
         owners.update(
             DynamoFixtures.meKey,
             mapOf(
-                "pets" to MockDynamoUpdate(action = MockDynamoUpdate.Type.Add, value = MockValue(1))
+                "pets" to MockDynamoUpdate(action = MockDynamoUpdate.Type.Add, value = MockDynamoValue(1))
             )
         ) shouldBe expected
 

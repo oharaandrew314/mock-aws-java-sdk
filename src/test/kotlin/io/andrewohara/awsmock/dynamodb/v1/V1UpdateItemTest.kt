@@ -5,7 +5,7 @@ import io.andrewohara.awsmock.dynamodb.DynamoFixtures
 import io.andrewohara.awsmock.dynamodb.DynamoUtils.createCatsTable
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
-import io.andrewohara.awsmock.dynamodb.backend.MockValue
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -49,6 +49,6 @@ class V1UpdateItemTest {
         client.updateItem(request) shouldBe UpdateItemResult()
             .withAttributes(V1Fixtures.toggles.plus("snoring" to AttributeValue("loudly")))
 
-        cats[DynamoFixtures.togglesKey] shouldBe DynamoFixtures.toggles.plus("snoring" to MockValue(s = "loudly"))
+        cats[DynamoFixtures.togglesKey] shouldBe DynamoFixtures.toggles.plus("snoring" to MockDynamoValue(s = "loudly"))
     }
 }

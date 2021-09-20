@@ -270,7 +270,7 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
             .map { (attr, value) -> attr to value.toV1() }
             .toMap()
 
-        private fun MockValue.toV1(): AttributeValue = AttributeValue()
+        private fun MockDynamoValue.toV1(): AttributeValue = AttributeValue()
             .withS(s)
             .withN(n?.toPlainString())
             .withB(b)
@@ -281,7 +281,7 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
             .withL(list?.map { it.toV1() })
             .withM(map?.toV1())
 
-        private fun AttributeValue.toMock(): MockValue = MockValue(
+        private fun AttributeValue.toMock(): MockDynamoValue = MockDynamoValue(
             s = s,
             n = n?.toBigDecimal(),
             b = b,

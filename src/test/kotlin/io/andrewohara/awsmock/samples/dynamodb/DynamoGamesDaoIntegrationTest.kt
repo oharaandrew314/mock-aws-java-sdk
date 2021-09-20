@@ -1,47 +1,63 @@
 package io.andrewohara.awsmock.samples.dynamodb
 
-import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
-import org.assertj.core.api.Assertions.*
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoAttribute
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoItem
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class DynamoGamesDaoIntegrationTest {
 
-    private val client = MockDynamoDbV1()
-    private val testObj = DynamoGamesDao("games", client)
+    private val backend = MockDynamoBackend()
+    private val testObj = DynamoGamesDao("games", MockDynamoDbV1(backend))
+    val table = backend.createTable(
+        name = "games",
+        hashKey = MockDynamoAttribute.number("id"),
+    )
 
-    init {
-        val request = CreateTableRequest()
-                .withTableName("games")
-                .withAttributeDefinitions(
-                        AttributeDefinition("id", ScalarAttributeType.N)
-                )
-                .withKeySchema(
-                        KeySchemaElement("id", KeyType.HASH)
-                )
-                .withProvisionedThroughput(ProvisionedThroughput(1, 1))
-
-        client.createTable(request)
+    object Fixtures {
+        val massEffect3 = MockDynamoItem(
+            "id" to MockDynamoValue(123),
+            "name" to MockDynamoValue(s = "Mass Effect 3")
+        )
     }
 
     @Test
     fun `get missing game`() {
-        assertThat(testObj[1]).isNull()
+        testObj[1].shouldBeNull()
     }
 
     @Test
-    fun `set and get game`() {
-        testObj[1] = "Kingdom Come: Deliverance"
-        testObj[2] = "Satisfactory"
+    fun `get game`() {
+        table.save(Fixtures.massEffect3)
 
-        assertThat(testObj[1]).isEqualTo("Kingdom Come: Deliverance")
+        testObj[123] shouldBe "Mass Effect 3"
+    }
+
+    @Test
+    fun `add game`() {
+        testObj[123] = "Mass Effect 3"
+
+        table.items.shouldContainExactlyInAnyOrder(
+            Fixtures.massEffect3
+        )
     }
 
     @Test
     fun `update game`() {
-        testObj[0] = "Kingdom Come"
-        testObj[0] = "Kingdom Come: Deliverance"
+        table.save(Fixtures.massEffect3)
 
-        assertThat(testObj[0]).isEqualTo("Kingdom Come: Deliverance")
+        testObj[123] = "Autonauts"
+
+        table.items.shouldContainExactlyInAnyOrder(
+            MockDynamoItem(
+                "id" to MockDynamoValue(123),
+                "name" to MockDynamoValue(s = "Autonauts")
+            )
+        )
     }
 }

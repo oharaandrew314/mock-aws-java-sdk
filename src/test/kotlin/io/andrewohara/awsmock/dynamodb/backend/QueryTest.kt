@@ -59,7 +59,7 @@ class QueryTest {
         table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         table.query(
-            setOf(Conditions.eq(MockValue(s = "Toggles")).forAttribute("name")),
+            setOf(Conditions.eq(MockDynamoValue(s = "Toggles")).forAttribute("name")),
             indexName = "names"
         ).shouldContainExactly(
             DynamoFixtures.toggles
@@ -87,7 +87,7 @@ class QueryTest {
         table.query(
             setOf(
                 Conditions.eq(DynamoFixtures.parentsOwnerId).forAttribute("ownerId"),
-                Conditions.eq(MockValue(s = "male")).forAttribute("gender")
+                Conditions.eq(MockDynamoValue(s = "male")).forAttribute("gender")
             ),
             indexName = "genders"
         ). shouldContainExactly(
@@ -113,7 +113,7 @@ class QueryTest {
     fun `query by missing index`() {
         shouldThrow<MockAwsException> {
             table.query(
-                setOf(Conditions.eq(MockValue(s = "male")).forAttribute("gender")),
+                setOf(Conditions.eq(MockDynamoValue(s = "male")).forAttribute("gender")),
                 indexName = "missingIndex"
             )
         }

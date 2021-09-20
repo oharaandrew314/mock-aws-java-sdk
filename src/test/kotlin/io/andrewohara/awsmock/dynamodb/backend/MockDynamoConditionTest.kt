@@ -9,13 +9,13 @@ class MockDynamoConditionTest {
     companion object {
         private fun String.toB() = ByteBuffer.wrap(encodeToByteArray())
 
-        private val hai = MockValue(s = "hai")
-        private val ha = MockValue(s = "ha")
-        private val stuff = MockValue(s = "stuff")
+        private val hai = MockDynamoValue(s = "hai")
+        private val ha = MockDynamoValue(s = "ha")
+        private val stuff = MockDynamoValue(s = "stuff")
 
-        private val haiB = MockValue(b = "hai".toB())
-        private val haB = MockValue(b = "ha".toB())
-        private val stuffB = MockValue(b = "stuff".toB())
+        private val haiB = MockDynamoValue(b = "hai".toB())
+        private val haB = MockDynamoValue(b = "ha".toB())
+        private val stuffB = MockDynamoValue(b = "stuff".toB())
     }
 
     @Test

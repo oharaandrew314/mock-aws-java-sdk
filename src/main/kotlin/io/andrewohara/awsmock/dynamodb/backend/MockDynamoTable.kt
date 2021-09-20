@@ -17,6 +17,10 @@ class MockDynamoTable(
 
     fun attributes() = (schema.attributes() + globalIndices.flatMap { it.attributes() } + localIndices.flatMap { it.attributes() }).toSet()
 
+    fun save(vararg values: Pair<String, MockDynamoValue>) {
+        save(MockDynamoItem(*values))
+    }
+
     fun save(vararg toSave: MockDynamoItem) {
         for (item in toSave) {
             schema.assertObeys(item)
