@@ -66,13 +66,13 @@ class GameServiceTest {
 
 | Service | SDKs | Support |
 | ------- | ---- | ------- | 
-| S3 | [MockS3V1](blob/master/src/main/kotlin/io/andrewohara/awsmock/s3/MockS3V1.kt)<br/>[MockS3V2](blob/master/src/main/kotlin/io/andrewohara/awsmock/s3/MockS3V2.kt) | :heavy_check_mark: Core Functionality<br/>:x: Object Metadata<br/>:x: Permissions |
-| SQS | [MockSqsV1](blob/master/src/main/kotlin/io/andrewohara/awsmock/sqs/MockSqsV1.kt)<br/>[MockSqsV2](blob/master/src/main/kotlin/io/andrewohara/awsmock/sqs/MockSqsV2.kt) | :heavy_check_mark: Core Functionality<br/>:x: Message Attributes |
-| Dynamo DB | [MockAmazonDynamoDb](blob/master/src/main/kotlin/io/andrewohara/awsmock/dynamodb/MockAmazonDynamoDB.kt) | :heavy_check_mark: Core Functionality<br/>:heavy_check_mark: Mapper<br/>:heavy_check_mark: Query/Scan Filters<br/>:x: Query/Scan Expressions<br/>:x: Conditional Operations<br/>:x: Projections |
-| SSM | [MockSsmV1](blob/master/src/main/kotlin/io/andrewohara/awsmock/ssm/MockSsmV1.kt)<br/>[MockSsmV2](blob/master/src/main/kotlin/io/andrewohara/awsmock/ssm/MockSsmV2.kt) | :heavy_check_mark: Parameter Store |
-| Secrets Manager | [MockSecretsManagerV1](blob/master/src/main/kotlin/io/andrewohara/awsmock/secretsmanager/MockSecretsManagerV1.kt)<br/>[MockSecretsManagerV2](blob/master/src/main/kotlin/io/andrewohara/awsmock/secretsmanager/MockSecretsManagerV2.kt) | :heavy_check_mark: Core Functionality<br/>:x: Secret Rotation |
-| SNS | [MockSnsV1](blob/master/src/main/kotlin/io/andrewohara/awsmock/sns/MockSnsV1.kt)<br/>[MockSnsV2](blob/master/src/main/kotlin/io/andrewohara/awsmock/sns/MockSnsV2.kt) | :heavy_check_mark: Create/Delete Topic<br/>:heavy_check_mark: Publish to Topic<br/>:x: Subscriptions |
-| Cloudformation | [MockCloudformationV1](blob/master/src/main/kotlin/io/andrewohara/awsmock/cloudformation/MockCloudformationV1.kt)<br/>[MockCloudformationV2](blob/master/src/main/kotlin/io/andrewohara/awsmock/cloudformation/MockCloudformationV2.kt) | :heavy_check_mark: Exports Only |
+| S3 | [MockS3V1](src/main/kotlin/io/andrewohara/awsmock/s3/MockS3V1.kt)<br/>[MockS3V2](src/main/kotlin/io/andrewohara/awsmock/s3/MockS3V2.kt) | :heavy_check_mark: Core Functionality<br/>:x: Object Metadata<br/>:x: Permissions |
+| SQS | [MockSqsV1](src/main/kotlin/io/andrewohara/awsmock/sqs/MockSqsV1.kt)<br/>[MockSqsV2](src/main/kotlin/io/andrewohara/awsmock/sqs/MockSqsV2.kt) | :heavy_check_mark: Core Functionality<br/>:x: Message Attributes |
+| Dynamo DB | [MockAmazonDynamoDb](src/main/kotlin/io/andrewohara/awsmock/dynamodb/MockAmazonDynamoDB.kt) | :heavy_check_mark: Core Functionality<br/>:heavy_check_mark: Mapper<br/>:heavy_check_mark: Query/Scan Filters<br/>:x: Query/Scan Expressions<br/>:x: Conditional Operations<br/>:x: Projections |
+| SSM | [MockSsmV1](src/main/kotlin/io/andrewohara/awsmock/ssm/MockSsmV1.kt)<br/>[MockSsmV2](src/main/kotlin/io/andrewohara/awsmock/ssm/MockSsmV2.kt) | :heavy_check_mark: Parameter Store |
+| Secrets Manager | [MockSecretsManagerV1](src/main/kotlin/io/andrewohara/awsmock/secretsmanager/MockSecretsManagerV1.kt)<br/>[MockSecretsManagerV2](src/main/kotlin/io/andrewohara/awsmock/secretsmanager/MockSecretsManagerV2.kt) | :heavy_check_mark: Core Functionality<br/>:x: Secret Rotation |
+| SNS | [MockSnsV1](src/main/kotlin/io/andrewohara/awsmock/sns/MockSnsV1.kt)<br/>[MockSnsV2](src/main/kotlin/io/andrewohara/awsmock/sns/MockSnsV2.kt) | :heavy_check_mark: Create/Delete Topic<br/>:heavy_check_mark: Publish to Topic<br/>:x: Subscriptions |
+| Cloudformation | [MockCloudformationV1](src/main/kotlin/io/andrewohara/awsmock/cloudformation/MockCloudformationV1.kt)<br/>[MockCloudformationV2](src/main/kotlin/io/andrewohara/awsmock/cloudformation/MockCloudformationV2.kt) | :heavy_check_mark: Exports Only |
 
 ## Samples
 
