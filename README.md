@@ -22,8 +22,6 @@ Follow the instructions on Jitpack.
 
 ## QuickStart
 
-Just make a mocked client and inject it into your classes that uses AWS.  Perform any initialization you need, and test away!
-
 ```kotlin
 class GameService(private val sns: SnsClient, private val eventsTopicArn: String) {
 
@@ -44,13 +42,23 @@ class GameService(private val sns: SnsClient, private val eventsTopicArn: String
     }
 }
 
+// inject a real client for real use
+fun main(args: Array<String>) {
+    val eventsTopicArn = args.first()
+    val sns = SnsClient.create()
+    val service = GameService(sns, eventsTopicArn)
+    // configure API and start server...
+}
+
 class GameServiceTest {
 
     private val backend = MockSnsBackend()
     private val topic = backend.createTopic("game-events")
+    
+    // inject a mock client for tests
     private val testObj = GameService(
-            sns = MockSnsV2(backend),
-            eventsTopicArn = topic.arn
+        sns = MockSnsV2(backend),
+        eventsTopicArn = topic.arn
     )
 
     @Test
@@ -61,6 +69,21 @@ class GameServiceTest {
     }
 }
 ```
+
+## How it Works
+
+Each mocked SDK implements the same interface as the standard SDKs.
+While the standard ones will delegate the calls to the AWS REST API,
+these clients will delegate them to a mock backend.
+
+Instead of allowing your classes under test to initialize their own SDK,
+you should update them to allow the SDK to be injected;
+your main runner will inject real SDKs, and your tests will inject the mocks.
+
+**Note:** Since the AWS resources created in the mock backends are in-memory, they will not persist.
+
+**Note:** If you use the v1 SDK, make sure you inject the v1 mock.  The same applies for the v2 SDK. 
+
 
 ## Supported Services
 
@@ -77,16 +100,3 @@ class GameServiceTest {
 ## Samples
 
 There are some [Sample Snippets](tree/master/src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
-
-## How it Works
-
-Each mocked SDK implements the same interface as the standard SDKs.
-While the standard ones will delegate the calls to the AWS REST API,
-the mocked one will perform the operations in-memory instead.
-
-Instead of allowing your classes under test to initialize their own SDK,
-you should update them to allow the SDK to be injected;
-your main runner will inject real SDKs, and your tests will inject the mocks.
-
-Since the AWS resources created in the mocks are in-memory, they will not persist,
-and they will only be shared between clients if you inject the same backend into them.
