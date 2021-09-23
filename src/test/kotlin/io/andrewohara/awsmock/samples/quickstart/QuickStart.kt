@@ -24,12 +24,26 @@ class GameService(private val sns: SnsClient, private val eventsTopicArn: String
 
         return id
     }
+
+    fun startServer() {
+        // do stuff
+    }
+}
+
+// inject a real client for real use
+fun main(args: Array<String>) {
+    val eventsTopicArn = args.first()
+    val sns = SnsClient.create()
+    val service = GameService(sns, eventsTopicArn)
+    service.startServer()
 }
 
 class GameServiceTest {
 
     private val backend = MockSnsBackend()
     private val topic = backend.createTopic("game-events")
+
+    // inject a mock client for tests
     private val testObj = GameService(
         sns = MockSnsV2(backend),
         eventsTopicArn = topic.arn

@@ -2,14 +2,17 @@ package io.andrewohara.awsmock.dynamodb.v1
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException
+import com.amazonaws.services.dynamodbv2.model.PutItemResult
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsMismatchedKey
 import io.andrewohara.awsmock.dynamodb.TestUtils.assertIsMissingKey
 import io.andrewohara.awsmock.dynamodb.DynamoFixtures
 import io.andrewohara.awsmock.dynamodb.DynamoUtils.createCatsTable
+import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1.Companion.toV1
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class V1PutItemUnitTest {
@@ -19,7 +22,7 @@ class V1PutItemUnitTest {
     private val table = backend.createCatsTable()
 
     @Test
-    fun `put item with missing hash key`() {
+    fun `put item with invalid hash key`() {
         val item = mapOf("foo" to AttributeValue("bar"))
 
         shouldThrow<AmazonDynamoDBException> {
@@ -56,7 +59,10 @@ class V1PutItemUnitTest {
 
     @Test
     fun `put item`() {
-        client.putItem(table.name, V1Fixtures.toggles)
+        client.putItem(
+            table.name,
+            V1Fixtures.toggles
+        ) shouldBe PutItemResult().withAttributes(DynamoFixtures.toggles.toV1())
 
         table.items.shouldContainExactly(DynamoFixtures.toggles)
     }

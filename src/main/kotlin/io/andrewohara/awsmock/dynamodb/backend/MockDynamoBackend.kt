@@ -26,9 +26,10 @@ class MockDynamoBackend(private val clock: Clock = Clock.systemUTC()) {
 
     fun getTable(name: String) = get(name) ?: throw resourceNotFound()
 
-    fun deleteTable(name: String) {
-        val removed = tables.removeIf { it.schema.name == name }
-        if (!removed) throw resourceNotFound()
+    fun deleteTable(name: String): MockDynamoTable {
+        val table = get(name) ?: throw resourceNotFound()
+        tables.remove(table)
+        return table
     }
 
     fun createTable(

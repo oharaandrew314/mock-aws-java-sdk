@@ -16,7 +16,7 @@ class DynamoGamesDaoIntegrationTest {
     private val testObj = DynamoGamesDao("games", MockDynamoDbV1(backend))
     val table = backend.createTable(
         name = "games",
-        hashKey = MockDynamoAttribute.number("id"),
+        hashKey = MockDynamoAttribute(MockDynamoAttribute.Type.Number,"id"),
     )
 
     object Fixtures {

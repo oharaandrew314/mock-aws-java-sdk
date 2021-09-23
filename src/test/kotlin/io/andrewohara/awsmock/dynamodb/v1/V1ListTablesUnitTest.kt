@@ -1,7 +1,9 @@
 package io.andrewohara.awsmock.dynamodb.v1
 
+import com.amazonaws.services.dynamodbv2.model.ListTablesRequest
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult
 import io.andrewohara.awsmock.dynamodb.DynamoUtils.createCatsTable
+import io.andrewohara.awsmock.dynamodb.DynamoUtils.createOwnersTable
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
 import io.kotest.matchers.shouldBe
@@ -19,8 +21,20 @@ class V1ListTablesUnitTest {
 
     @Test
     fun `list tables`() {
-        val table = backend.createCatsTable()
+        val cats = backend.createCatsTable()
+        val owners = backend.createOwnersTable()
 
-        client.listTables() shouldBe ListTablesResult().withTableNames(table.name)
+        client.listTables() shouldBe ListTablesResult()
+            .withTableNames(cats.name, owners.name)
+    }
+
+    @Test
+    fun `list tables with limit`() {
+        val cats = backend.createCatsTable()
+        backend.createOwnersTable()
+
+        val request = ListTablesRequest().withLimit(1)
+        client.listTables(request) shouldBe ListTablesResult()
+            .withTableNames(cats.name)
     }
 }

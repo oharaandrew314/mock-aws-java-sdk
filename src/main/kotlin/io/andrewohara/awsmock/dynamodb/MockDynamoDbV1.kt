@@ -67,14 +67,17 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
     }
 
     override fun putItem(request: PutItemRequest): PutItemResult {
-        try {
+        val item = try {
             val table = backend.getTable(request.tableName)
-            table.save(request.item.toMock())
+            val item = request.item.toMock()
+            table.save(item)
+            item
         } catch (e: MockAwsException) {
             throw e.toV1()
         }
 
         return PutItemResult()
+            .withAttributes(item.toV1())
     }
 
     override fun batchWriteItem(request: BatchWriteItemRequest): BatchWriteItemResult {
@@ -156,8 +159,8 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
         }
 
         return ScanResult()
-                .withCount(items.size)
-                .withItems(items.map { it.toV1() })
+            .withCount(items.size)
+            .withItems(items.map { it.toV1() })
     }
 
     override fun query(request: QueryRequest): QueryResult {
@@ -176,8 +179,8 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
         }
 
         return QueryResult()
-                .withCount(items.size)
-                .withItems(items.map { it.toV1() })
+            .withCount(items.size)
+            .withItems(items.map { it.toV1() })
     }
 
     override fun batchGetItem(request: BatchGetItemRequest): BatchGetItemResult {
@@ -191,18 +194,19 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
         }
 
         return BatchGetItemResult()
-                .withResponses(results.mapValues { it.value.map { item -> item.toV1() } })
-                .withUnprocessedKeys(emptyMap())  // TODO implement
+            .withResponses(results.mapValues { it.value.map { item -> item.toV1() } })
+            .withUnprocessedKeys(emptyMap())  // TODO implement
     }
 
     override fun deleteTable(request: DeleteTableRequest): DeleteTableResult {
-        try {
+        val table = try {
             backend.deleteTable(request.tableName)
         } catch (e: MockAwsException) {
             throw e.toV1()
         }
 
         return DeleteTableResult()
+            .withTableDescription(table.toDescription())
     }
 
     companion object {
@@ -214,7 +218,7 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
                 ScalarAttributeType.S -> MockDynamoAttribute.Type.String
             }
         )
-        private fun MockDynamoAttribute.toV1() = AttributeDefinition()
+        fun MockDynamoAttribute.toV1() = AttributeDefinition()
             .withAttributeName(name)
             .withAttributeType(when(type) {
                 MockDynamoAttribute.Type.Binary -> ScalarAttributeType.B
@@ -266,11 +270,11 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
                 }
             )
 
-        private fun MockDynamoItem.toV1(): Map<String, AttributeValue> = attributes
+        fun MockDynamoItem.toV1(): Map<String, AttributeValue> = attributes
             .map { (attr, value) -> attr to value.toV1() }
             .toMap()
 
-        private fun MockDynamoValue.toV1(): AttributeValue = AttributeValue()
+        fun MockDynamoValue.toV1(): AttributeValue = AttributeValue()
             .withS(s)
             .withN(n?.toPlainString())
             .withB(b)
@@ -290,7 +294,7 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
             ns = ns?.map(String::toBigDecimal)?.toSet(),
             bs = bs?.toSet(),
             list = l?.map { it.toMock() },
-            map = m?.mapValues { it.value.toMock() }?.let { MockDynamoItem(it.toMutableMap()) }
+            map = m?.mapValues { it.value.toMock() }?.let { MockDynamoItem(it) }
         )
 
         private fun Map.Entry<String, Condition>.toMock(): ItemCondition {
