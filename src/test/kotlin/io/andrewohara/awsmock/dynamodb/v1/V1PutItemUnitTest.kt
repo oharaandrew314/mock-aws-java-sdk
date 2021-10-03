@@ -10,6 +10,7 @@ import io.andrewohara.awsmock.dynamodb.DynamoFixtures
 import io.andrewohara.awsmock.dynamodb.DynamoUtils.createCatsTable
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1.Companion.toV1
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -65,5 +66,14 @@ class V1PutItemUnitTest {
         ) shouldBe PutItemResult().withAttributes(DynamoFixtures.toggles.toV1())
 
         table.items.shouldContainExactly(DynamoFixtures.toggles)
+    }
+
+    @Test
+    fun `put item with empty list`() {
+        val item = DynamoFixtures.toggles.plus("features" to MockDynamoValue(list = emptyList()))
+
+        client.putItem(table.name, item.toV1()) shouldBe PutItemResult().withAttributes(item.toV1())
+
+        table.items.shouldContainExactly(item)
     }
 }

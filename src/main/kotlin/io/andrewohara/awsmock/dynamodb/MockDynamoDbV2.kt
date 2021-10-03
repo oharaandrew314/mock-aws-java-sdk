@@ -275,25 +275,25 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             bool = bool(),
             ss = ss()
                 ?.toSet()
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf { hasSs() }
             ,
             ns = ns()
                 ?.map(String::toBigDecimal)
                 ?.toSet()
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf { hasNs() }
             ,
             bs = bs()
                 ?.map { it.asByteBuffer() }
                 ?.toSet()
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf { hasBs() }
             ,
             list = l()
                 ?.map { it.toMock() }
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf { hasL() }
             ,
             map = m()
                 ?.mapValues { it.value.toMock() }
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf { hasM() }
                 ?.let { MockDynamoItem(it) }
         )
 
