@@ -34,7 +34,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.eq(MockDynamoValue(s = "male")).forAttribute("gender")
+            "gender" to MockDynamoCondition.eq(MockDynamoValue(s = "male"))
         ).shouldContainExactly(
             DynamoFixtures.bandit
         )
@@ -45,7 +45,7 @@ class ScanTest {
         owners.save(DynamoFixtures.me, DynamoFixtures.parents)
 
         owners.scan(
-            Conditions.gt(MockDynamoValue(1)).forAttribute("pets")
+            "pets" to MockDynamoCondition.gt(MockDynamoValue(1))
         ).shouldContainExactly(
             DynamoFixtures.parents
         )
@@ -56,7 +56,7 @@ class ScanTest {
         owners.save(DynamoFixtures.me, DynamoFixtures.parents)
 
         owners.scan(
-            Conditions.contains(MockDynamoValue(s = "ren")).forAttribute("name")
+            "name" to MockDynamoCondition.contains(MockDynamoValue(s = "ren"))
         ).shouldContainExactly(
             DynamoFixtures.parents
         )
@@ -67,7 +67,7 @@ class ScanTest {
         owners.save(DynamoFixtures.me, DynamoFixtures.parents)
 
         owners.scan(
-            Conditions.contains(MockDynamoValue(s = "ren")).not().forAttribute("name")
+            "name" to !MockDynamoCondition.contains(MockDynamoValue(s = "ren"))
         ).shouldContainExactly(
             DynamoFixtures.me
         )
@@ -78,7 +78,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.contains(MockDynamoValue(s = "grey")).forAttribute("features")
+            "features" to MockDynamoCondition.contains(MockDynamoValue(s = "grey"))
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey,
             DynamoFixtures.bandit
@@ -90,7 +90,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.contains(MockDynamoValue(9001)).forAttribute("visitDates")
+            "visitDates" to MockDynamoCondition.contains(MockDynamoValue(9001))
         ).shouldContainExactly(
             DynamoFixtures.toggles
         )
@@ -101,9 +101,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions
-                .inside(listOf(DynamoFixtures.parentsOwnerId, DynamoFixtures.meOwnerId))
-                .forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.inside(DynamoFixtures.parentsOwnerId, DynamoFixtures.meOwnerId)
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -114,9 +112,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions
-                .inside(listOf(MockDynamoValue(s = "Smokey"), MockDynamoValue(s = "Bandit")))
-                .forAttribute("name")
+            "name" to MockDynamoCondition.inside(MockDynamoValue(s = "Smokey"), MockDynamoValue(s = "Bandit"))
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -127,7 +123,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.ge(MockDynamoValue(2)).forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.ge(MockDynamoValue(2))
         ).shouldContainExactly(
             DynamoFixtures.toggles
         )
@@ -138,7 +134,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.le(MockDynamoValue(2)).forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.le(MockDynamoValue(2))
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -149,7 +145,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.lt(MockDynamoValue(2)).forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.lt(MockDynamoValue(2))
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -160,7 +156,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.eq(MockDynamoValue(s = "Toggles")).not().forAttribute("name")
+            "name" to !MockDynamoCondition.eq(MockDynamoValue(s = "Toggles"))
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -171,7 +167,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.beginsWith(MockDynamoValue(s = "Tog")).forAttribute("name")
+            "name" to MockDynamoCondition.beginsWith(MockDynamoValue(s = "Tog"))
         ).shouldContainExactly(
             DynamoFixtures.toggles
         )
@@ -182,7 +178,7 @@ class ScanTest {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.between(MockDynamoValue(0)..MockDynamoValue(10)).forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.between(MockDynamoValue(0), MockDynamoValue(10))
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -194,7 +190,7 @@ class ScanTest {
         cats.save(toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.exists("bestCat")
+            "bestCat" to MockDynamoCondition.exists()
         ).shouldContainExactly(
             toggles
         )
@@ -206,7 +202,7 @@ class ScanTest {
         cats.save(toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.exists("bestCat").inv()
+            "bestCat" to !MockDynamoCondition.exists()
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey, DynamoFixtures.bandit
         )
@@ -218,7 +214,7 @@ class ScanTest {
         cats.save(toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.exists("null"),
+            "null" to MockDynamoCondition.exists()
         ).shouldContainExactly(
             toggles
         )
@@ -230,7 +226,7 @@ class ScanTest {
         cats.save(toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         cats.scan(
-            Conditions.exists("null").inv(),
+            "null" to !MockDynamoCondition.exists()
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey, DynamoFixtures.bandit
         )

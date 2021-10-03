@@ -17,7 +17,7 @@ class QueryTest {
     @Test
     fun `query empty table`() {
         table.query(
-            Conditions.eq(DynamoFixtures.togglesOwnerId).forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.eq(DynamoFixtures.togglesOwnerId)
         ).shouldBeEmpty()
     }
 
@@ -26,7 +26,7 @@ class QueryTest {
         table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         table.query(
-            Conditions.eq(DynamoFixtures.parentsOwnerId).forAttribute("ownerId")
+            "ownerId" to MockDynamoCondition.eq(DynamoFixtures.parentsOwnerId)
         ).shouldContainExactlyInAnyOrder(
             DynamoFixtures.smokey,
             DynamoFixtures.bandit
@@ -38,7 +38,9 @@ class QueryTest {
         table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         table.query(
-            setOf(Conditions.eq(DynamoFixtures.parentsOwnerId).forAttribute("ownerId")),
+            mapOf(
+                "ownerId" to MockDynamoCondition.eq(DynamoFixtures.parentsOwnerId)
+            ),
             scanIndexForward = false
         ).shouldContainExactly(
             DynamoFixtures.smokey,
@@ -46,7 +48,9 @@ class QueryTest {
         )
 
         table.query(
-            setOf(Conditions.eq(DynamoFixtures.parentsOwnerId).forAttribute("ownerId")),
+            mapOf(
+                "ownerId" to MockDynamoCondition.eq(DynamoFixtures.parentsOwnerId)
+            ),
             scanIndexForward = true
         ).shouldContainExactly(
             DynamoFixtures.bandit,
@@ -59,7 +63,9 @@ class QueryTest {
         table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         table.query(
-            setOf(Conditions.eq(MockDynamoValue(s = "Toggles")).forAttribute("name")),
+            mapOf(
+                "name" to MockDynamoCondition.eq(MockDynamoValue(s = "Toggles"))
+            ),
             indexName = "names"
         ).shouldContainExactly(
             DynamoFixtures.toggles
@@ -85,9 +91,9 @@ class QueryTest {
         table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         table.query(
-            setOf(
-                Conditions.eq(DynamoFixtures.parentsOwnerId).forAttribute("ownerId"),
-                Conditions.eq(MockDynamoValue(s = "male")).forAttribute("gender")
+            mapOf(
+                "ownerId" to MockDynamoCondition.eq(DynamoFixtures.parentsOwnerId),
+                "gender" to MockDynamoCondition.eq(MockDynamoValue(s = "male"))
             ),
             indexName = "genders"
         ). shouldContainExactly(
@@ -113,7 +119,9 @@ class QueryTest {
     fun `query by missing index`() {
         shouldThrow<MockAwsException> {
             table.query(
-                setOf(Conditions.eq(MockDynamoValue(s = "male")).forAttribute("gender")),
+                mapOf(
+                    "gender" to MockDynamoCondition.eq(MockDynamoValue(s = "male"))
+                ),
                 indexName = "missingIndex"
             )
         }

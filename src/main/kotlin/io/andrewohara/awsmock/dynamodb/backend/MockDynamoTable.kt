@@ -40,15 +40,15 @@ class MockDynamoTable(
         return item
     }
 
-    fun scan(vararg conditions: ItemCondition) = scan(conditions.toList())
+    fun scan(vararg conditions: Pair<String, MockDynamoCondition>) = scan(conditions.toMap())
 
-    fun scan(conditions: Collection<ItemCondition>): Set<MockDynamoItem> {
+    fun scan(conditions: Map<String, MockDynamoCondition>): Set<MockDynamoItem> {
         return items.filter(conditions).toSet()
     }
 
-    fun query(vararg conditions: ItemCondition) = query(conditions.toSet())
+    fun query(vararg conditions: Pair<String, MockDynamoCondition>) = query(conditions.toMap())
 
-    fun query(conditions: Collection<ItemCondition>, scanIndexForward: Boolean = true, indexName: String? = null): List<MockDynamoItem> {
+    fun query(conditions: Map<String, MockDynamoCondition>, scanIndexForward: Boolean = true, indexName: String? = null): List<MockDynamoItem> {
         if (indexName != null) {
             (globalIndices + localIndices).find { it.name == indexName } ?: throw missingIndex(indexName)
         }
@@ -75,8 +75,12 @@ class MockDynamoTable(
         return item
     }
 
-    private fun List<MockDynamoItem>.filter(conditions: Collection<ItemCondition>): List<MockDynamoItem> {
-        return filter { item -> conditions.all { it(item) } }
+    private fun List<MockDynamoItem>.filter(conditions: Map<String, MockDynamoCondition>): List<MockDynamoItem> {
+        return filter { item ->
+            conditions.all { (name, condition) ->
+                condition(name, item)
+            }
+        }
     }
 }
 

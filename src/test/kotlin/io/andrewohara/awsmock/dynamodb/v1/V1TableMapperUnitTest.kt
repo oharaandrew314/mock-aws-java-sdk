@@ -1,11 +1,7 @@
 package io.andrewohara.awsmock.dynamodb.v1
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
+import com.amazonaws.services.dynamodbv2.datamodeling.*
 import com.amazonaws.services.dynamodbv2.model.*
-import io.andrewohara.awsmock.dynamodb.DynamoCat
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -130,3 +126,19 @@ class V1TableMapperUnitTest {
         }
     }
 }
+
+@DynamoDBTable(tableName = "cats")
+data class DynamoCat(
+    @DynamoDBHashKey
+    var ownerId: Int? = null,
+
+    @DynamoDBRangeKey
+    @DynamoDBIndexHashKey(globalSecondaryIndexName = "names")
+    var name: String? = null,
+
+    @DynamoDBIndexRangeKey(localSecondaryIndexName = "genders")
+    var gender: String? = null,
+
+    var features: Set<String> = emptySet(),
+    var visitDates: Set<Int> = emptySet()
+)

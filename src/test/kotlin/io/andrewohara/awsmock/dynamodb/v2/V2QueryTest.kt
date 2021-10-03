@@ -36,7 +36,7 @@ class V2QueryTest {
     }
 
     @Test
-    fun `query table`() {
+    fun `query only`() {
         client.query {
             it.tableName(table.name)
             it.keyConditions(mapOf(
@@ -51,6 +51,28 @@ class V2QueryTest {
         } shouldBe QueryResponse.builder()
             .count(2)
             .items(DynamoFixtures.smokey.toV2(), DynamoFixtures.bandit.toV2())
+            .build()
+    }
+
+    @Test
+    fun `query with filter`() {
+        client.query {
+            it.tableName(table.name)
+            it.keyConditions(mapOf(
+                "ownerId" to Condition.builder()
+                    .comparisonOperator(ComparisonOperator.EQ)
+                    .attributeValueList(
+                        AttributeValue.builder().n("1").build()
+                    )
+                    .build()
+            ))
+            it.filterExpression("gender = :gender")
+            it.expressionAttributeValues(mapOf(
+                ":gender" to AttributeValue.builder().s("female").build()
+            ))
+        } shouldBe QueryResponse.builder()
+            .count(1)
+            .items(DynamoFixtures.smokey.toV2())
             .build()
     }
 

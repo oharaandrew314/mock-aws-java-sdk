@@ -26,7 +26,7 @@ class V2ScanTest {
     }
 
     @Test
-    fun `scan with filter`() {
+    fun `scan with conditions`() {
         cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
 
         client.scan {
@@ -42,6 +42,23 @@ class V2ScanTest {
         } shouldBe ScanResponse.builder()
             .count(1)
             .items(DynamoFixtures.bandit.toV2())
+            .build()
+    }
+
+    @Test
+    fun `scan with filter expression`() {
+        cats.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
+
+        client.scan {
+            it.tableName(cats.name)
+            it.filterExpression("name = :name and gender = :gender")
+            it.expressionAttributeValues(mapOf(
+                ":name" to AttributeValue.builder().s("Smokey").build(),
+                ":gender" to AttributeValue.builder().s("female").build()
+            ))
+        } shouldBe ScanResponse.builder()
+            .count(1)
+            .items(DynamoFixtures.smokey.toV2())
             .build()
     }
 }

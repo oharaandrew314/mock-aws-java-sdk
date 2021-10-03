@@ -5,6 +5,16 @@ import com.amazonaws.services.dynamodbv2.AbstractAmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.core.MockAwsException
 import io.andrewohara.awsmock.dynamodb.backend.*
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.beginsWith
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.between
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.contains
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.eq
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.exists
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.ge
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.gt
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.inside
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.le
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.lt
 import java.util.*
 
 class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend()): AbstractAmazonDynamoDB() {
@@ -150,10 +160,12 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
     override fun scan(request: ScanRequest): ScanResult {
         val items = try {
             val table = backend.getTable(request.tableName)
-
-            table.scan(
-                conditions = request.scanFilter?.map { it.toMock() } ?: emptyList()
+            val conditions = request.scanFilter.toMock() +  MockDynamoCondition.parseExpression(
+                expression = request.filterExpression ?: "",
+                values = request.expressionAttributeValues.toMock()
             )
+
+            table.scan(conditions)
         } catch (e: MockAwsException) {
             throw e.toV1()
         }
@@ -164,13 +176,17 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
     }
 
     override fun query(request: QueryRequest): QueryResult {
-        val conditions = (request.keyConditions ?: emptyMap()) + (request.queryFilter ?: emptyMap())
+        val conditions = (request.keyConditions.toMock() + request.queryFilter.toMock()).toMutableMap()
+        conditions += MockDynamoCondition.parseExpression(
+            expression = request.filterExpression ?: "",
+            values = request.expressionAttributeValues.toMock()
+        )
 
         val items = try {
             val table = backend.getTable(request.tableName)
 
             table.query(
-                conditions = conditions.map { it.toMock() },
+                conditions = conditions,
                 scanIndexForward = request.scanIndexForward ?: true,
                 indexName = request.indexName
             )
@@ -297,30 +313,30 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
             map = m?.mapValues { it.value.toMock() }?.let { MockDynamoItem(it) }
         )
 
-        private fun Map.Entry<String, Condition>.toMock(): ItemCondition {
-            val (name, condition) = this
+        private fun Condition.toMock(): MockDynamoCondition {
+            fun arg(index: Int = 0) = attributeValueList[index]?.toMock() ?: throw validationFailed()
 
-            fun arg(index: Int = 0) = condition.attributeValueList[index]?.toMock() ?: throw validationFailed()
-
-            return when(ComparisonOperator.valueOf(condition.comparisonOperator)) {
-                ComparisonOperator.EQ -> Conditions.eq(arg()).forAttribute(name)
-                ComparisonOperator.NE -> Conditions.eq(arg()).forAttribute(name)
-                ComparisonOperator.LT -> Conditions.lt(arg()).forAttribute(name)
-                ComparisonOperator.LE -> Conditions.le(arg()).forAttribute(name)
-                ComparisonOperator.GT -> Conditions.gt(arg()).forAttribute(name)
-                ComparisonOperator.GE -> Conditions.ge(arg()).forAttribute(name)
-                ComparisonOperator.CONTAINS -> Conditions.contains(arg()).forAttribute(name)
-                ComparisonOperator.NOT_CONTAINS -> Conditions.contains(arg()).not().forAttribute(name)
-                ComparisonOperator.NULL -> Conditions.exists(name).inv()
-                ComparisonOperator.NOT_NULL -> Conditions.exists(name)
-                ComparisonOperator.BEGINS_WITH -> Conditions.beginsWith(arg()).forAttribute(name)
-                ComparisonOperator.BETWEEN -> Conditions.between(arg(0)..arg(1)).forAttribute(name)
-                ComparisonOperator.IN -> Conditions.inside(condition.attributeValueList.map { it.toMock() }).forAttribute(name)
+            return when(ComparisonOperator.valueOf(comparisonOperator)) {
+                ComparisonOperator.EQ -> eq(arg())
+                ComparisonOperator.NE -> eq(arg())
+                ComparisonOperator.LT -> lt(arg())
+                ComparisonOperator.LE -> le(arg())
+                ComparisonOperator.GT -> gt(arg())
+                ComparisonOperator.GE -> ge(arg())
+                ComparisonOperator.CONTAINS -> contains(arg())
+                ComparisonOperator.NOT_CONTAINS -> contains(arg()).not()
+                ComparisonOperator.NULL -> !exists()
+                ComparisonOperator.NOT_NULL -> exists()
+                ComparisonOperator.BEGINS_WITH -> beginsWith(arg())
+                ComparisonOperator.BETWEEN -> between(arg(0), arg(1))
+                ComparisonOperator.IN -> inside(attributeValueList.map { it.toMock() })
             }
         }
 
-        private fun Map<String, AttributeValue>.toMock() = MockDynamoItem(
-            attributes = mapValues { it.value.toMock() }.toMutableMap()
+        private fun Map<String, Condition>?.toMock() = this?.mapValues { it.value.toMock() } ?: emptyMap()
+
+        private fun Map<String, AttributeValue>?.toMock() = MockDynamoItem(
+            attributes = this?.mapValues { it.value.toMock() } ?: emptyMap()
         )
 
         private fun AttributeValueUpdate.toMock() = MockDynamoUpdate(

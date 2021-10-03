@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoTable
+import io.andrewohara.awsmock.dynamodb.v1.DynamoCat
 
 object DynamoUtils {
 

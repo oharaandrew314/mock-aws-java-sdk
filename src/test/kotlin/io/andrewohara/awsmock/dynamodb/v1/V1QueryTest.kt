@@ -31,7 +31,7 @@ class V1QueryTest {
     }
 
     @Test
-    fun `query table`() {
+    fun `query only`() {
         val request = QueryRequest()
             .withTableName(table.name)
             .withKeyConditions(mapOf("ownerId" to Condition().eq(1)))
@@ -52,5 +52,19 @@ class V1QueryTest {
         shouldThrow<AmazonDynamoDBException> {
             client.query(request)
         }.assertIsMissingIndex("foos")
+    }
+
+    @Test
+    fun `query and filter`() {
+        val request = QueryRequest()
+            .withTableName(table.name)
+            .withKeyConditions(mapOf("ownerId" to Condition().eq(1)))
+            .withFilterExpression("gender = :gender")
+            .withExpressionAttributeValues(mapOf(":gender" to AttributeValue("female")))
+            .withScanIndexForward(false)
+
+        client.query(request) shouldBe QueryResult()
+            .withCount(1)
+            .withItems(V1Fixtures.smokey)
     }
 }

@@ -3,9 +3,12 @@ package io.andrewohara.awsmock.dynamodb
 import io.andrewohara.awsmock.core.MockAwsException
 import io.andrewohara.awsmock.dynamodb.backend.*
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails
+import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.*
+import software.amazon.awssdk.services.dynamodb.paginators.QueryIterable
+import software.amazon.awssdk.services.dynamodb.paginators.ScanIterable
 import java.lang.IllegalStateException
 import java.lang.UnsupportedOperationException
 import java.util.*
@@ -171,30 +174,22 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             .build()
     }
 
-    fun MockAwsException.toV2() = when(errorCode) {
-        "ResourceNotFoundException" -> ResourceNotFoundException.builder()
-        "ResourceInUseException" -> ResourceInUseException.builder()
-        else -> DynamoDbException.builder()
-    }.requestId(UUID.randomUUID().toString())
-        .statusCode(statusCode)
-        .message(message)
-        .awsErrorDetails(
-            AwsErrorDetails.builder()
-                .errorMessage(message)
-                .serviceName(serviceName())
-                .errorCode(errorCode)
-                .build()
-        )
-        .build()
-
     override fun query(request: QueryRequest): QueryResponse {
-        val conditions = (request.keyConditions() ?: emptyMap()) + (request.queryFilter() ?: emptyMap())
+        val conditions = request.keyConditions().toMock().toMutableMap()
+        conditions += MockDynamoCondition.parseExpression(
+            expression = request.keyConditionExpression() ?: "",
+            values = request.expressionAttributeValues().toMock()
+        )
+        conditions += MockDynamoCondition.parseExpression(
+            expression = request.filterExpression() ?: "",
+            values = request.expressionAttributeValues().toMock()
+        )
 
         val items = try {
             val table = backend.getTable(request.tableName())
 
             table.query(
-                conditions = conditions.map { it.toMock() },
+                conditions = conditions,
                 scanIndexForward = request.scanIndexForward() ?: true,
                 indexName = request.indexName()
             )
@@ -208,13 +203,19 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             .build()
     }
 
+    override fun queryPaginator(request: QueryRequest) = QueryIterable(this, request)
+
     override fun scan(request: ScanRequest): ScanResponse {
         val items = try {
             val table = backend.getTable(request.tableName())
 
-            table.scan(
-                conditions = request.scanFilter()?.map { it.toMock() } ?: emptyList()
+            val conditions = request.scanFilter().toMock().toMutableMap()
+            conditions += MockDynamoCondition.parseExpression(
+                expression = request.filterExpression() ?: "",
+                values = request.expressionAttributeValues().toMock()
             )
+
+            table.scan(conditions)
         } catch (e: MockAwsException) {
             throw e.toV2()
         }
@@ -240,6 +241,26 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             .attributes(item?.toV2())
             .build()
     }
+
+    override fun scanPaginator(request: ScanRequest): ScanIterable {
+        return ScanIterable(this, request)
+    }
+
+    fun MockAwsException.toV2(): AwsServiceException = when(errorCode) {
+        "ResourceNotFoundException" -> ResourceNotFoundException.builder()
+        "ResourceInUseException" -> ResourceInUseException.builder()
+        else -> DynamoDbException.builder()
+    }.requestId(UUID.randomUUID().toString())
+        .statusCode(statusCode)
+        .message(message)
+        .awsErrorDetails(
+            AwsErrorDetails.builder()
+                .errorMessage(message)
+                .serviceName(serviceName())
+                .errorCode(errorCode)
+                .build()
+        )
+        .build()
 
     companion object {
         fun MockDynamoAttribute.toV2(): AttributeDefinition = AttributeDefinition.builder()
@@ -297,8 +318,8 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
                 ?.let { MockDynamoItem(it) }
         )
 
-        private fun Map<String, AttributeValue>.toMock() = MockDynamoItem(
-            attributes = mapValues { it.value.toMock() }.toMutableMap()
+        private fun Map<String, AttributeValue>?.toMock() = MockDynamoItem(
+            attributes = this?.mapValues { it.value.toMock() } ?: emptyMap()
         )
 
         private fun AttributeDefinition.toMock() = MockDynamoAttribute(
@@ -311,7 +332,7 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             }
         )
 
-        fun MockDynamoSchema.toV1KeySchema() = listOfNotNull(
+        private fun MockDynamoSchema.toV1KeySchema() = listOfNotNull(
             KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
                 .attributeName(hashKey.name)
@@ -355,25 +376,25 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             )
             .build()
 
-        private fun Map.Entry<String, Condition>.toMock(): ItemCondition {
-            val (name, condition) = this
+        private fun Map<String, Condition>?.toMock() = this?.mapValues { it.value.toMock() } ?: emptyMap()
 
-            fun arg(index: Int = 0) = condition.attributeValueList()[index]?.toMock() ?: throw validationFailed()
+        private fun Condition.toMock(): MockDynamoCondition {
+            fun arg(index: Int = 0) = attributeValueList()[index]?.toMock() ?: throw validationFailed()
 
-            return when(condition.comparisonOperator()) {
-                ComparisonOperator.EQ -> Conditions.eq(arg()).forAttribute(name)
-                ComparisonOperator.NE -> Conditions.eq(arg()).forAttribute(name)
-                ComparisonOperator.LT -> Conditions.lt(arg()).forAttribute(name)
-                ComparisonOperator.LE -> Conditions.le(arg()).forAttribute(name)
-                ComparisonOperator.GT -> Conditions.gt(arg()).forAttribute(name)
-                ComparisonOperator.GE -> Conditions.ge(arg()).forAttribute(name)
-                ComparisonOperator.CONTAINS -> Conditions.contains(arg()).forAttribute(name)
-                ComparisonOperator.NOT_CONTAINS -> Conditions.contains(arg()).not().forAttribute(name)
-                ComparisonOperator.NULL -> Conditions.exists(name).inv()
-                ComparisonOperator.NOT_NULL -> Conditions.exists(name)
-                ComparisonOperator.BEGINS_WITH -> Conditions.beginsWith(arg()).forAttribute(name)
-                ComparisonOperator.BETWEEN -> Conditions.between(arg(0)..arg(1)).forAttribute(name)
-                ComparisonOperator.IN -> Conditions.inside(condition.attributeValueList().map { it.toMock() }).forAttribute(name)
+            return when(comparisonOperator()) {
+                ComparisonOperator.EQ -> MockDynamoCondition.eq(arg())
+                ComparisonOperator.NE -> MockDynamoCondition.eq(arg())
+                ComparisonOperator.LT -> MockDynamoCondition.lt(arg())
+                ComparisonOperator.LE -> MockDynamoCondition.le(arg())
+                ComparisonOperator.GT -> MockDynamoCondition.gt(arg())
+                ComparisonOperator.GE -> MockDynamoCondition.ge(arg())
+                ComparisonOperator.CONTAINS -> MockDynamoCondition.contains(arg())
+                ComparisonOperator.NOT_CONTAINS -> MockDynamoCondition.contains(arg()).not()
+                ComparisonOperator.NULL -> !MockDynamoCondition.exists()
+                ComparisonOperator.NOT_NULL -> MockDynamoCondition.exists()
+                ComparisonOperator.BEGINS_WITH -> MockDynamoCondition.beginsWith(arg())
+                ComparisonOperator.BETWEEN -> MockDynamoCondition.between(arg(0), arg(1))
+                ComparisonOperator.IN -> MockDynamoCondition.inside(attributeValueList().map { it.toMock() })
                 ComparisonOperator.UNKNOWN_TO_SDK_VERSION, null -> throw IllegalStateException()
             }
         }

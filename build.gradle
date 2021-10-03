@@ -36,6 +36,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testImplementation 'org.assertj:assertj-core:3.20.2'
     testImplementation 'io.kotest:kotest-runner-junit5:4.6.2'
+    testImplementation "software.amazon.awssdk:dynamodb-enhanced"
 }
 
 configurations { // don't want to bundle SDKs in library, but they are needed in tests
