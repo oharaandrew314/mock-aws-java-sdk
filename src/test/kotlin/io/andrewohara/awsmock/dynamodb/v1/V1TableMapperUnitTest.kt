@@ -3,6 +3,7 @@ package io.andrewohara.awsmock.dynamodb.v1
 import com.amazonaws.services.dynamodbv2.datamodeling.*
 import com.amazonaws.services.dynamodbv2.model.*
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV1
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -13,17 +14,10 @@ import org.junit.jupiter.api.Test
 
 class V1TableMapperUnitTest {
 
-    private val client = MockDynamoDbV1()
-    private val mapper = DynamoDBMapper(
-        client,
-        DynamoDBMapperConfig.Builder()
-            .withTableNameOverride(DynamoDBMapperConfig.TableNameOverride("cats"))
-            .build()
-    ).newTableMapper<DynamoCat, Int, String>(DynamoCat::class.java)
-
-    init {
-        mapper.createTable(ProvisionedThroughput(1, 1))
-    }
+    private val backend = MockDynamoBackend()
+    private val mapper = DynamoDBMapper(MockDynamoDbV1(backend))
+        .newTableMapper<DynamoCat, Int, String>(DynamoCat::class.java)
+        .also { it.createTable(ProvisionedThroughput(1, 1)) }
 
     private val toggles = DynamoCat(2, "Toggles", "female")
     private val smokey = DynamoCat(1, "Smokey", "female")
@@ -86,6 +80,17 @@ class V1TableMapperUnitTest {
     }
 
     @Test
+    fun `query by global index`() {
+        mapper.batchSave(setOf(toggles, smokey, bandit)).shouldBeEmpty()
+
+        val expression = DynamoDBQueryExpression<DynamoCat>()
+            .withIndexName("names")
+            .withHashKeyValues(DynamoCat(name = "Toggles"))
+
+        mapper.query(expression).shouldContainExactly(toggles)
+    }
+
+    @Test
     fun `get missing`() {
         mapper.load(2, "Toggles").shouldBeNull()
     }
@@ -114,7 +119,7 @@ class V1TableMapperUnitTest {
     fun `delete table`() {
         mapper.deleteTable()
 
-        client.listTables().tableNames.shouldBeEmpty()
+        backend.tables().shouldBeEmpty()
     }
 
     @Test

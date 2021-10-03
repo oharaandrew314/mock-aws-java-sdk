@@ -4,34 +4,65 @@ import io.andrewohara.awsmock.dynamodb.MockDynamoDbV2
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
-import software.amazon.awssdk.enhanced.dynamodb.Key
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema
+import software.amazon.awssdk.enhanced.dynamodb.*
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import java.util.*
 
 @DynamoDbBean
 data class DynamoPerson(
     @get:DynamoDbPartitionKey var id: String = UUID.randomUUID().toString(),
 
-    var name: String = "Unknown"
-)
+    @get:DynamoDbSecondaryPartitionKey(indexNames = ["names"])
+    var name: String? = null,
+
+    var gender: String? = null,
+) {
+    fun toModel() = Person(
+        id = UUID.fromString(id),
+        name = name ?: "unknown",
+        gender = gender ?: "unknown"
+    )
+}
+
+data class Person(val id: UUID, val name: String, val gender: String)
 
 
 class PersonService(private val table: DynamoDbTable<DynamoPerson>) {
 
-    fun register(name: String): UUID {
-        val item = DynamoPerson(name = name)
+    fun register(name: String, gender: String): Person {
+        val id = UUID.randomUUID()
+        val item = DynamoPerson(id = id.toString(), name = name, gender = gender)
         table.putItem(item)
 
-        return UUID.fromString(item.id)
+        return Person(id = id, name = name, gender = gender)
     }
 
-    operator fun get(id: UUID): String? {
+    operator fun get(id: UUID): Person? {
         val key = Key.builder().partitionValue(id.toString()).build()
-        return table.getItem(key)?.name
+        return table.getItem(key)?.toModel()
+    }
+
+    operator fun get(name: String, gender: String): Person? {
+         return table.index("names")
+            .query { builder: QueryEnhancedRequest.Builder ->
+                builder.queryConditional(
+                    QueryConditional.keyEqualTo(Key.builder().partitionValue(name).build())
+                )
+                builder.filterExpression(Expression.builder()
+                    .expression("gender = :gender")
+                    .putExpressionValue(":gender", AttributeValue.builder().s(gender).build())
+                    .build()
+                )
+            }
+             .asSequence()
+             .flatMap { it.items() }
+             .map { it.toModel() }
+             .firstOrNull()
     }
 }
 
@@ -47,22 +78,50 @@ class PersonServiceTest {
 
     @Test
     fun `register person`() {
-        val id = testObj.register("Andrew")
+        val person = testObj.register("Andrew", "male")
 
-        table.getItem(Key.builder().partitionValue(id.toString()).build()) shouldBe DynamoPerson(id = id.toString(), name = "Andrew")
+        val key = Key.builder().partitionValue(person.id.toString()).build()
+        table.getItem(key) shouldBe DynamoPerson(
+            id = person.id.toString(),
+            name = "Andrew",
+            gender = "male"
+        )
     }
 
     @Test
     fun `get person`() {
         val id = UUID.randomUUID()
-        val person = DynamoPerson(id = id.toString(), name = "Andrew")
+        val person = DynamoPerson(id = id.toString(), name = "Andrew", gender = "male")
         table.putItem(person)
 
-        testObj[id] shouldBe "Andrew"
+        testObj[id] shouldBe Person(
+            id = id,
+            name = "Andrew",
+            gender = "male"
+        )
     }
 
     @Test
     fun `get missing person`() {
         testObj[UUID.randomUUID()].shouldBeNull()
+    }
+
+    @Test
+    fun `get by name and gender`() {
+        val male = DynamoPerson(name = "Alex", gender = "male")
+        val female = DynamoPerson(name = "Alex", gender = "female")
+
+        table.putItem(male)
+        table.putItem(female)
+
+        testObj["Alex", "female"] shouldBe female.toModel()
+    }
+
+    @Test
+    fun `get by name and incorrect gender`() {
+        val male = DynamoPerson(name = "Alex", gender = "male")
+        table.putItem(male)
+
+        testObj["Alex", "female"].shouldBeNull()
     }
 }

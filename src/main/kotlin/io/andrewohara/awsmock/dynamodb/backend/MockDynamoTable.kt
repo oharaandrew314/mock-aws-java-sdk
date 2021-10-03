@@ -8,7 +8,8 @@ class MockDynamoTable(
     val schema: MockDynamoSchema,
     val created: Instant,
     val globalIndices: Collection<MockDynamoSchema>,
-    val localIndices: Collection<MockDynamoSchema>
+    val localIndices: Collection<MockDynamoSchema>,
+    val enforceIndices: Boolean = true
 ) {
     val name = schema.name
     val arn = "arn:aws:dynamodb-mock:ca-central-1:0123456789:table/$name"
@@ -49,7 +50,7 @@ class MockDynamoTable(
     fun query(vararg conditions: Pair<String, MockDynamoCondition>) = query(conditions.toMap())
 
     fun query(conditions: Map<String, MockDynamoCondition>, scanIndexForward: Boolean = true, indexName: String? = null): List<MockDynamoItem> {
-        if (indexName != null) {
+        if (enforceIndices && indexName != null) {
             (globalIndices + localIndices).find { it.name == indexName } ?: throw missingIndex(indexName)
         }
 

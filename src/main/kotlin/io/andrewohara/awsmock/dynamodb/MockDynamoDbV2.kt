@@ -49,7 +49,9 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
                 hashKey = request.keySchema().attribute(KeyType.HASH) ?: throw validationFailed().toV2(),
                 rangeKey = request.keySchema().attribute(KeyType.RANGE),
                 globalIndices = globalIndices,
-                localIndices = localIndices
+                localIndices = localIndices,
+                // FIXME: Cannot be enforced due to a cut feature in the v2 enhanced client (https://github.com/aws/aws-sdk-java-v2/issues/1771)
+                enforceIndices = false
             )
         } catch (e: MockAwsException) {
             throw e.toV2()
