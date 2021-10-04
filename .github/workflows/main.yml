@@ -38,7 +38,7 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@v1
 
-      - name: Set up ${{ matrix.distribution }} JDK ${{ matrix.java_version } on ${{ matrix.os }}
+      - name: Set up ${{ matrix.distribution }} JDK ${{ matrix.java_version }} on ${{ matrix.os }}
         uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java_version }}
