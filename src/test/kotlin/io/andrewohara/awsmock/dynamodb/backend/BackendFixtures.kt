@@ -3,7 +3,7 @@ package io.andrewohara.awsmock.dynamodb.backend
 
 object PeopleTable {
 
-    fun create(backend: MockDynamoBackend): MockDynamoTable {
+    fun create(backend: MockDynamoBackend, enforceIndices: Boolean = true): MockDynamoTable {
         return backend.createTable(
             name = "indexTable",
             hashKey = MockDynamoAttribute(MockDynamoAttribute.Type.Number, "id"),
@@ -13,7 +13,8 @@ object PeopleTable {
                     hashKey = MockDynamoAttribute(MockDynamoAttribute.Type.String, "lastName"),
                     rangeKey = MockDynamoAttribute(MockDynamoAttribute.Type.String, "firstName")
                 )
-            )
+            ),
+            enforceIndices = enforceIndices
         )
     }
 

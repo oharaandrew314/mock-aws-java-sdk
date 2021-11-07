@@ -102,9 +102,6 @@ class QueryTest {
 
     @Test
     fun `query by global index with wrong key`() {
-        val table = PeopleTable.create(backend)
-        table.save(PeopleTable.johnDoe, PeopleTable.janeDoe, PeopleTable.billSmith)
-
         shouldThrow<MockAwsException> {
             table.query(
                 mapOf(
@@ -140,5 +137,19 @@ class QueryTest {
                 indexName = "missingIndex"
             )
         }
+    }
+
+    @Test
+    fun `query many by index when enforceIndices false`() {
+        val table = PeopleTable.create(backend, enforceIndices = false)
+        table.save(PeopleTable.johnDoe, PeopleTable.janeDoe, PeopleTable.billSmith)
+
+        table.query(
+            mapOf(
+                "lastName" to MockDynamoCondition.eq(MockDynamoValue(s = "Doe"))
+            ),
+            scanIndexForward = true,
+            indexName = "names"
+        ).shouldContainExactly(PeopleTable.janeDoe, PeopleTable.johnDoe)
     }
 }
