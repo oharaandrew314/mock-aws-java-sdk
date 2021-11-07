@@ -57,8 +57,10 @@ class MockDynamoTable(
         }
 
         val filtered = items.filter(conditions)
+        if (schema == null) return filtered
+        schema.assertObeys(conditions.keys)
 
-        if (schema?.rangeKey == null) return filtered
+        if (schema.rangeKey == null) return filtered
 
         return filtered.sortedWith(MockItemComparator(schema.rangeKey, !scanIndexForward))
     }

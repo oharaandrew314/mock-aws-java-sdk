@@ -100,19 +100,20 @@ class QueryTest {
         ).shouldContainExactly(PeopleTable.johnDoe, PeopleTable.janeDoe)
     }
 
-//    @Test
-//    fun `query by global index with wrong key`() {
-//        table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
-//
-//        shouldThrow<MockAwsException> {
-//            table.query(
-//                setOf(
-//                    Conditions.eq(MockValue(s = "male")).forAttribute("gender")
-//                ),
-//                indexName = "names"
-//            )
-//        }
-//    }
+    @Test
+    fun `query by global index with wrong key`() {
+        val table = PeopleTable.create(backend)
+        table.save(PeopleTable.johnDoe, PeopleTable.janeDoe, PeopleTable.billSmith)
+
+        shouldThrow<MockAwsException> {
+            table.query(
+                mapOf(
+                    "gender" to MockDynamoCondition.eq(MockDynamoValue(s = "male"))
+                ),
+                indexName = "names"
+            )
+        }
+    }
 
     @Test
     fun `query by local index`() {
@@ -128,20 +129,6 @@ class QueryTest {
             DynamoFixtures.bandit
         )
     }
-
-//    @Test
-//    fun `query by local index without full key`() {
-//        table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
-//
-//        shouldThrow<MockAwsException> {
-//            table.query(
-//                setOf(
-//                    Conditions.eq(MockValue(s = "male")).forAttribute("gender")
-//                ),
-//                indexName = "genders"
-//            )
-//        }
-//    }
 
     @Test
     fun `query by missing index`() {

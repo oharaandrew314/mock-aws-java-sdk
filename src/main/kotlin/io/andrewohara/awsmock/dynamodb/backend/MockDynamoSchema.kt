@@ -19,6 +19,12 @@ data class MockDynamoSchema(
         }
     }
 
+    fun assertObeys(attributeNames: Collection<String>) {
+        if (hashKey.name !in attributeNames) {
+            throw mismatchedKey(hashKey)
+        }
+    }
+
     private fun mismatchedKey(key: MockDynamoAttribute) = MockAwsException(
         message = "One or more parameter values were invalid: Missing the key ${key.name} in the item",
         errorCode = "ValidationException",
