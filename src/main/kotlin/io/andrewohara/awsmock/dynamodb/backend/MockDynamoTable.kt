@@ -50,13 +50,15 @@ class MockDynamoTable(
     fun query(vararg conditions: Pair<String, MockDynamoCondition>) = query(conditions.toMap())
 
     fun query(conditions: Map<String, MockDynamoCondition>, scanIndexForward: Boolean = true, indexName: String? = null): List<MockDynamoItem> {
-        if (enforceIndices && indexName != null) {
-            (globalIndices + localIndices).find { it.name == indexName } ?: throw missingIndex(indexName)
+        val schema = when {
+            indexName == null -> schema
+            enforceIndices -> (globalIndices + localIndices).find { it.name == indexName } ?: throw missingIndex(indexName)
+            else -> null
         }
 
         val filtered = items.filter(conditions)
 
-        if (schema.rangeKey == null) return filtered
+        if (schema?.rangeKey == null) return filtered
 
         return filtered.sortedWith(MockItemComparator(schema.rangeKey, !scanIndexForward))
     }

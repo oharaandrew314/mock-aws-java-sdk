@@ -72,6 +72,34 @@ class QueryTest {
         )
     }
 
+    @Test
+    fun `query many by global index - forward order`() {
+        val table = PeopleTable.create(backend)
+        table.save(PeopleTable.johnDoe, PeopleTable.janeDoe, PeopleTable.billSmith)
+
+        table.query(
+            mapOf(
+                "lastName" to MockDynamoCondition.eq(MockDynamoValue(s = "Doe"))
+            ),
+            scanIndexForward = true,
+            indexName = "names"
+        ).shouldContainExactly(PeopleTable.janeDoe, PeopleTable.johnDoe)
+    }
+
+    @Test
+    fun `query many by global index - backward order`() {
+        val table = PeopleTable.create(backend)
+        table.save(PeopleTable.johnDoe, PeopleTable.janeDoe, PeopleTable.billSmith)
+
+        table.query(
+            mapOf(
+                "lastName" to MockDynamoCondition.eq(MockDynamoValue(s = "Doe"))
+            ),
+            scanIndexForward = false,
+            indexName = "names"
+        ).shouldContainExactly(PeopleTable.johnDoe, PeopleTable.janeDoe)
+    }
+
 //    @Test
 //    fun `query by global index with wrong key`() {
 //        table.save(DynamoFixtures.toggles, DynamoFixtures.smokey, DynamoFixtures.bandit)
