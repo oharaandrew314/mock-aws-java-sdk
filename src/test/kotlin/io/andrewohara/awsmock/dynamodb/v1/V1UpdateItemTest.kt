@@ -34,6 +34,19 @@ class V1UpdateItemTest {
     }
 
     @Test
+    fun `update with null updates`() {
+        cats.save(DynamoFixtures.toggles)
+
+        val request = UpdateItemRequest()
+            .withTableName(cats.name)
+            .withKey(V1Fixtures.togglesKey)
+
+        client.updateItem(request)  // don't throw exception
+
+        cats[DynamoFixtures.togglesKey] shouldBe DynamoFixtures.toggles
+    }
+
+    @Test
     fun `put value for item`() {
         cats.save(DynamoFixtures.toggles)
 

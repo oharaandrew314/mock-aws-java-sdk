@@ -114,11 +114,12 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
     }
 
     override fun updateItem(request: UpdateItemRequest): UpdateItemResult {
+        // TODO support update expression
         val item = try {
             val table = backend.getTable(request.tableName)
             table.update(
                 key = request.key.toMock(),
-                updates = request.attributeUpdates.mapValues { it.value.toMock() }
+                updates = (request.attributeUpdates ?: emptyMap()).mapValues { it.value.toMock() }
             )
         } catch (e: MockAwsException) {
             throw e.toV1()

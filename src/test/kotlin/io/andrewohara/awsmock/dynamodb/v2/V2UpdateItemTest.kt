@@ -34,6 +34,20 @@ class V2UpdateItemTest {
     }
 
     @Test
+    fun `update with null updates`() {
+        cats.save(DynamoFixtures.toggles)
+
+        client.updateItem {
+            it.tableName(cats.name)
+            it.key(DynamoFixtures.togglesKey.toV2())
+        } shouldBe UpdateItemResponse.builder()
+            .attributes(DynamoFixtures.toggles.toV2())
+            .build()
+
+        cats[DynamoFixtures.togglesKey] shouldBe DynamoFixtures.toggles
+    }
+
+    @Test
     fun `put value for item`() {
         cats.save(DynamoFixtures.toggles)
 
