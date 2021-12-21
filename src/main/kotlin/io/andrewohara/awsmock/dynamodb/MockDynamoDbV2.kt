@@ -280,17 +280,20 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             .map { (attr, value) -> attr to value.toV2() }
             .toMap()
 
-        fun MockDynamoValue.toV2(): AttributeValue = AttributeValue.builder()
-            .s(s)
-            .n(n?.toPlainString())
-            .b(b?.let(SdkBytes::fromByteBuffer))
-            .bool(bool)
-            .ss(ss)
-            .ns(ns?.map { it.toPlainString() })
-            .bs(bs?.map { SdkBytes.fromByteBuffer(it) })
-            .l(list?.map { it.toV2() })
-            .m(map?.toV2())
-            .build()
+        fun MockDynamoValue.toV2(): AttributeValue = AttributeValue.builder().let { builder ->
+            when(type) {
+                MockDynamoAttribute.Type.Binary -> builder.b(b?.let(SdkBytes::fromByteBuffer))
+                MockDynamoAttribute.Type.Boolean -> builder.bool(bool)
+                MockDynamoAttribute.Type.List -> builder.l(list?.map { it.toV2() })
+                MockDynamoAttribute.Type.Map -> builder.m(map?.toV2())
+                MockDynamoAttribute.Type.Null -> builder.nul(true)
+                MockDynamoAttribute.Type.Number -> builder.n(n?.toPlainString())
+                MockDynamoAttribute.Type.BinarySet -> builder.bs(bs?.map { SdkBytes.fromByteBuffer(it) })
+                MockDynamoAttribute.Type.NumberSet -> builder.ns(ns?.map { it.toPlainString() })
+                MockDynamoAttribute.Type.String -> builder.s(s)
+                MockDynamoAttribute.Type.StringSet -> builder.ss(ss)
+            }
+        }.build()
 
         private fun AttributeValue.toMock(): MockDynamoValue = MockDynamoValue(
             s = s(),

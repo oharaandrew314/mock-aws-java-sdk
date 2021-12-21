@@ -291,16 +291,18 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
             .map { (attr, value) -> attr to value.toV1() }
             .toMap()
 
-        fun MockDynamoValue.toV1(): AttributeValue = AttributeValue()
-            .withS(s)
-            .withN(n?.toPlainString())
-            .withB(b)
-            .withBOOL(bool)
-            .withSS(ss)
-            .withNS(ns?.map { it.toPlainString() })
-            .withBS(bs)
-            .withL(list?.map { it.toV1() })
-            .withM(map?.toV1())
+        fun MockDynamoValue.toV1(): AttributeValue = when (type) {
+            MockDynamoAttribute.Type.String -> AttributeValue().withS(s)
+            MockDynamoAttribute.Type.StringSet -> AttributeValue().withSS(ss)
+            MockDynamoAttribute.Type.Null -> AttributeValue().withNULL(true)
+            MockDynamoAttribute.Type.Map -> AttributeValue().withM(map?.toV1())
+            MockDynamoAttribute.Type.List -> AttributeValue().withL(list?.map { it.toV1() })
+            MockDynamoAttribute.Type.Boolean -> AttributeValue().withB(b)
+            MockDynamoAttribute.Type.Number -> AttributeValue().withN(n?.toPlainString())
+            MockDynamoAttribute.Type.Binary -> AttributeValue().withBOOL(bool)
+            MockDynamoAttribute.Type.NumberSet -> AttributeValue().withNS(ns?.map { it.toPlainString() })
+            MockDynamoAttribute.Type.BinarySet -> AttributeValue().withBS(bs)
+        }
 
         private fun AttributeValue.toMock(): MockDynamoValue = MockDynamoValue(
             s = s,
