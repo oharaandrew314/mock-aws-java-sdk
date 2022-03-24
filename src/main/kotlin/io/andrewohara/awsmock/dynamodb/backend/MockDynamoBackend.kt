@@ -37,8 +37,7 @@ class MockDynamoBackend(private val clock: Clock = Clock.systemUTC()) {
         hashKey: MockDynamoAttribute,
         rangeKey: MockDynamoAttribute? = null,
         globalIndices: Collection<MockDynamoSchema> = emptyList(),
-        localIndices: Collection<MockDynamoSchema> = emptyList(),
-        enforceIndices: Boolean = true
+        localIndices: Collection<MockDynamoSchema> = emptyList()
     ): MockDynamoTable {
         get(name)?.let { throw resourceInUse(name) }
 
@@ -50,8 +49,7 @@ class MockDynamoBackend(private val clock: Clock = Clock.systemUTC()) {
             ),
             created = clock.instant(),
             globalIndices = globalIndices,
-            localIndices = localIndices,
-            enforceIndices = enforceIndices
+            localIndices = localIndices
         )
 
         tables.add(table)

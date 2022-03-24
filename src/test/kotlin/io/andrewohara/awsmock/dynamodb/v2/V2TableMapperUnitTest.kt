@@ -10,13 +10,17 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import software.amazon.awssdk.enhanced.dynamodb.Expression
 import software.amazon.awssdk.enhanced.dynamodb.Key
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*
+import software.amazon.awssdk.enhanced.dynamodb.model.EnhancedGlobalSecondaryIndex
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.Projection
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
 
 class V2TableMapperUnitTest {
@@ -25,8 +29,7 @@ class V2TableMapperUnitTest {
     private val table = DynamoDbEnhancedClient.builder()
         .dynamoDbClient(MockDynamoDbV2(backend))
         .build()
-        .table("cats", TableSchema.fromBean(DynamoCat::class.java))
-        .apply { createTable() }
+        .let { DynamoCat.create(it) }
 
     private val toggles = DynamoCat(2, "Toggles", "female")
     private val smokey = DynamoCat(1, "Smokey", "female")
@@ -164,11 +167,9 @@ class V2TableMapperUnitTest {
         table.putItem(smokey)
         table.putItem(bandit)
 
-        table.index("names").query { builder: QueryEnhancedRequest.Builder ->
-            builder.queryConditional(
-                QueryConditional.keyEqualTo(Key.builder().partitionValue("Smokey").build())
-            )
-        }.flatMap { it.items() }
+        table.index("names").query(
+            QueryConditional.keyEqualTo(Key.builder().partitionValue("Smokey").build())
+        ).flatMap { it.items() }
             .toList()
             .shouldContainExactly(smokey)
     }
@@ -182,10 +183,25 @@ data class DynamoCat(
     @get:DynamoDbSecondaryPartitionKey(indexNames = ["names"])
     var name: String? = null,
 
-    @get:DynamoDbSecondarySortKey(indexNames = ["genders"])
+//    @get:DynamoDbSecondarySortKey(indexNames = ["genders"])
     var gender: String? = null,
 
     var features: List<String> = emptyList()
 ) {
     fun toKey(): Key = Key.builder().partitionValue(ownerId).sortValue(name).build()
+
+    companion object {
+        fun create(dynamo: DynamoDbEnhancedClient): DynamoDbTable<DynamoCat> {
+            val table = dynamo.table("cats", TableSchema.fromBean(DynamoCat::class.java))
+
+            table.createTable {
+                it.globalSecondaryIndices(
+                    EnhancedGlobalSecondaryIndex.builder().indexName("names").projection(Projection.builder().projectionType(ProjectionType.ALL).build()).build(),
+//                    EnhancedGlobalSecondaryIndex.builder().indexName("genders").projection(Projection.builder().projectionType(ProjectionType.ALL).build()).build(),
+                )
+            }
+
+            return table
+        }
+    }
 }

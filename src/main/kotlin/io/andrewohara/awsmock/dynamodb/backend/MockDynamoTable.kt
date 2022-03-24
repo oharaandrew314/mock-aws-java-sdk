@@ -8,8 +8,7 @@ class MockDynamoTable(
     val schema: MockDynamoSchema,
     val created: Instant,
     val globalIndices: Collection<MockDynamoSchema>,
-    val localIndices: Collection<MockDynamoSchema>,
-    val enforceIndices: Boolean = true
+    val localIndices: Collection<MockDynamoSchema>
 ) {
     val name = schema.name
     val arn = "arn:aws:dynamodb-mock:ca-central-1:0123456789:table/$name"
@@ -54,7 +53,7 @@ class MockDynamoTable(
             (globalIndices + localIndices).find { it.name == indexName }
         }
 
-        if (indexName != null && schema == null && enforceIndices) throw missingIndex(indexName)
+        if (indexName != null && schema == null) throw missingIndex(indexName)
 
         val filtered = items.filter(conditions)
         if (schema == null) return filtered
