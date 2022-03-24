@@ -5,16 +5,20 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.enhanced.dynamodb.*
+import software.amazon.awssdk.enhanced.dynamodb.mapper.BeanTableSchema
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey
+import software.amazon.awssdk.enhanced.dynamodb.model.EnhancedGlobalSecondaryIndex
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.Projection
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType
 import java.util.*
 
 @DynamoDbBean
-data class DynamoPerson(
+data class DynamoV2Person(
     @get:DynamoDbPartitionKey var id: String = UUID.randomUUID().toString(),
 
     @get:DynamoDbSecondaryPartitionKey(indexNames = ["names"])
@@ -27,16 +31,32 @@ data class DynamoPerson(
         name = name ?: "unknown",
         gender = gender ?: "unknown"
     )
+
+    companion object {
+        fun create(dynamo: DynamoDbEnhancedClient): DynamoDbTable<DynamoV2Person> {
+            val table = dynamo.table("person", BeanTableSchema.create(DynamoV2Person::class.java))
+
+            table.createTable {
+                it.globalSecondaryIndices(
+                    EnhancedGlobalSecondaryIndex.builder().indexName("names").projection(
+                        Projection.builder().projectionType(ProjectionType.ALL).build()
+                    ).build()
+                )
+            }
+
+            return table
+        }
+    }
 }
 
 data class Person(val id: UUID, val name: String, val gender: String)
 
 
-class PersonService(private val table: DynamoDbTable<DynamoPerson>) {
+class PersonService(private val table: DynamoDbTable<DynamoV2Person>) {
 
     fun register(name: String, gender: String): Person {
         val id = UUID.randomUUID()
-        val item = DynamoPerson(id = id.toString(), name = name, gender = gender)
+        val item = DynamoV2Person(id = id.toString(), name = name, gender = gender)
         table.putItem(item)
 
         return Person(id = id, name = name, gender = gender)
@@ -71,8 +91,7 @@ class PersonServiceTest {
     private val table = DynamoDbEnhancedClient.builder()
         .dynamoDbClient(MockDynamoDbV2())
         .build()
-        .table("people", TableSchema.fromBean(DynamoPerson::class.java))
-        .also { it.createTable() }
+        .let { DynamoV2Person.create(it) }
 
     private val testObj = PersonService(table)
 
@@ -81,7 +100,7 @@ class PersonServiceTest {
         val person = testObj.register("Andrew", "male")
 
         val key = Key.builder().partitionValue(person.id.toString()).build()
-        table.getItem(key) shouldBe DynamoPerson(
+        table.getItem(key) shouldBe DynamoV2Person(
             id = person.id.toString(),
             name = "Andrew",
             gender = "male"
@@ -91,7 +110,7 @@ class PersonServiceTest {
     @Test
     fun `get person`() {
         val id = UUID.randomUUID()
-        val person = DynamoPerson(id = id.toString(), name = "Andrew", gender = "male")
+        val person = DynamoV2Person(id = id.toString(), name = "Andrew", gender = "male")
         table.putItem(person)
 
         testObj[id] shouldBe Person(
@@ -108,8 +127,8 @@ class PersonServiceTest {
 
     @Test
     fun `get by name and gender`() {
-        val male = DynamoPerson(name = "Alex", gender = "male")
-        val female = DynamoPerson(name = "Alex", gender = "female")
+        val male = DynamoV2Person(name = "Alex", gender = "male")
+        val female = DynamoV2Person(name = "Alex", gender = "female")
 
         table.putItem(male)
         table.putItem(female)
@@ -119,7 +138,7 @@ class PersonServiceTest {
 
     @Test
     fun `get by name and incorrect gender`() {
-        val male = DynamoPerson(name = "Alex", gender = "male")
+        val male = DynamoV2Person(name = "Alex", gender = "male")
         table.putItem(male)
 
         testObj["Alex", "female"].shouldBeNull()

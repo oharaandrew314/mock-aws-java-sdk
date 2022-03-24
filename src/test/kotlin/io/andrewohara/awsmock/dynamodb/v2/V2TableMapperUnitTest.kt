@@ -29,11 +29,11 @@ class V2TableMapperUnitTest {
     private val table = DynamoDbEnhancedClient.builder()
         .dynamoDbClient(MockDynamoDbV2(backend))
         .build()
-        .let { DynamoCat.create(it) }
+        .let { DynamoV2Cat.create(it) }
 
-    private val toggles = DynamoCat(2, "Toggles", "female")
-    private val smokey = DynamoCat(1, "Smokey", "female")
-    private val bandit = DynamoCat(1, "Bandit", "male")
+    private val toggles = DynamoV2Cat(2, "Toggles", "female")
+    private val smokey = DynamoV2Cat(1, "Smokey", "female")
+    private val bandit = DynamoV2Cat(1, "Bandit", "male")
 
     @Test
     fun `scan empty`() {
@@ -176,14 +176,13 @@ class V2TableMapperUnitTest {
 }
 
 @DynamoDbBean
-data class DynamoCat(
+data class DynamoV2Cat(
     @get:DynamoDbPartitionKey var ownerId: Int? = null,
 
     @get:DynamoDbSortKey
     @get:DynamoDbSecondaryPartitionKey(indexNames = ["names"])
     var name: String? = null,
 
-//    @get:DynamoDbSecondarySortKey(indexNames = ["genders"])
     var gender: String? = null,
 
     var features: List<String> = emptyList()
@@ -191,13 +190,12 @@ data class DynamoCat(
     fun toKey(): Key = Key.builder().partitionValue(ownerId).sortValue(name).build()
 
     companion object {
-        fun create(dynamo: DynamoDbEnhancedClient): DynamoDbTable<DynamoCat> {
-            val table = dynamo.table("cats", TableSchema.fromBean(DynamoCat::class.java))
+        fun create(dynamo: DynamoDbEnhancedClient): DynamoDbTable<DynamoV2Cat> {
+            val table = dynamo.table("cats", TableSchema.fromBean(DynamoV2Cat::class.java))
 
             table.createTable {
                 it.globalSecondaryIndices(
                     EnhancedGlobalSecondaryIndex.builder().indexName("names").projection(Projection.builder().projectionType(ProjectionType.ALL).build()).build(),
-//                    EnhancedGlobalSecondaryIndex.builder().indexName("genders").projection(Projection.builder().projectionType(ProjectionType.ALL).build()).build(),
                 )
             }
 

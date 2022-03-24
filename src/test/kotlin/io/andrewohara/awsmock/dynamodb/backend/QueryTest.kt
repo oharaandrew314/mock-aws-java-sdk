@@ -138,4 +138,14 @@ class QueryTest {
             )
         }
     }
+
+    @Test
+    fun `query index by wrong key`() {
+        shouldThrow<MockAwsException> {
+            table.query(
+                indexName = "names",
+                conditions = mapOf("ownerId" to MockDynamoCondition.eq(MockDynamoValue(123)))
+            )
+        }
+    }
 }
