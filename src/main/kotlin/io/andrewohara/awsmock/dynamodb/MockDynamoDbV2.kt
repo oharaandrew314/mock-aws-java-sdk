@@ -293,7 +293,7 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             }
         }.build()
 
-        private fun AttributeValue.toMock(): MockDynamoValue = MockDynamoValue(
+        fun AttributeValue.toMock(): MockDynamoValue = MockDynamoValue(
             s = s(),
             n = n()?.toBigDecimal(),
             b = b()?.asByteBuffer(),
