@@ -22,6 +22,7 @@ dependencies {
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager'
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sns'
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-cloudformation'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-iot'
 
     compileOnly platform("software.amazon.awssdk:bom:2.17.34+")
     compileOnly "software.amazon.awssdk:s3"
@@ -31,11 +32,12 @@ dependencies {
     compileOnly "software.amazon.awssdk:secretsmanager"
     compileOnly "software.amazon.awssdk:ssm"
     compileOnly "software.amazon.awssdk:dynamodb"
+    compileOnly "software.amazon.awssdk:iotdataplane"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    testImplementation 'org.assertj:assertj-core:3.20.2'
-    testImplementation 'io.kotest:kotest-runner-junit5:4.6.2'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'io.kotest:kotest-runner-junit5:4.6.2' // don't upgrade; requires newer kotlin sdk
     testImplementation "software.amazon.awssdk:dynamodb-enhanced"
 }
 
