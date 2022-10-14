@@ -2,8 +2,9 @@ package io.andrewohara.awsmock.sns.v2
 
 import io.andrewohara.awsmock.sns.MockSnsBackend
 import io.andrewohara.awsmock.sns.MockSnsV2
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.services.sns.model.SnsException
 
@@ -14,10 +15,9 @@ class MockSnsV2CreateTopicTest {
 
     @Test
     fun `create topic - without name throws exception`() {
-        assertThatThrownBy { client.createTopic { } }
-            .isInstanceOf(SnsException::class.java)
-
-        assertThat(backend.topics()).isEmpty()
+        shouldThrow<SnsException> {
+            client.createTopic { }
+        }
     }
 
     @Test
@@ -26,10 +26,13 @@ class MockSnsV2CreateTopicTest {
             it.name("foo")
         }
 
-        assertThat(backend.topics())
-            .hasSize(1)
-            .allMatch { it.arn == topic.topicArn() }
-            .allMatch { it.name == "foo" }
+        backend.topics()
+            .shouldHaveSize(1)
+            .first()
+            .let {
+                it.arn shouldBe topic.topicArn()
+                it.name shouldBe "foo"
+            }
     }
 
     @Test
@@ -41,10 +44,14 @@ class MockSnsV2CreateTopicTest {
             it.name("foo")
         }
 
-        assertThat(duplicate.topicArn()).isEqualTo(original.topicArn())
-        assertThat(backend.topics())
-            .hasSize(1)
-            .allMatch { it.name == "foo" }
-            .allMatch { it.arn == original.topicArn() }
+        duplicate.topicArn() shouldBe original.topicArn()
+
+        backend.topics()
+            .shouldHaveSize(1)
+            .first()
+            .let {
+                it.arn shouldBe original.topicArn()
+                it.name shouldBe "foo"
+            }
     }
 }

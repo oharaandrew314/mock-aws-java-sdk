@@ -42,10 +42,34 @@ class MockSnsV1(private val backend: MockSnsBackend = MockSnsBackend()): Abstrac
             statusCode = 404
         }
 
-        val message = topic.publish(message = request.message, subject = request.subject)
+        val attributes = request.messageAttributes?.mapValues { it.value.stringValue }
+        val message = topic.publish(message = request.message, subject = request.subject, attributes = attributes)
 
         return PublishResult()
                 .withMessageId(message.messageId)
+    }
+
+    override fun publishBatch(request: PublishBatchRequest): PublishBatchResult {
+        if (request.topicArn == null) throw createInvalidParameterException("TopicArn or TargetArn")
+        val topic = backend[request.topicArn] ?: throw NotFoundException("Topic does not exist").apply {
+            requestId = UUID.randomUUID().toString()
+            errorType = AmazonServiceException.ErrorType.Client
+            errorCode = "NotFound"
+            statusCode = 404
+        }
+
+        val receipts = request.publishBatchRequestEntries
+            .withIndex()
+            .map { (index, entry) ->
+                val attributes = entry.messageAttributes?.mapValues { it.value.stringValue }
+                val receipt = topic.publish(message = entry.message, subject = entry.subject, attributes = attributes)
+                PublishBatchResultEntry()
+                    .withId(entry.id)
+                    .withMessageId(receipt.messageId)
+                    .withSequenceNumber(index.toString())
+            }
+
+        return PublishBatchResult().withSuccessful(receipts)
     }
 
     private fun createInvalidParameterException(parameter: String) = InvalidParameterException("Invalid parameter: $parameter Reason: no value for required parameter").apply {

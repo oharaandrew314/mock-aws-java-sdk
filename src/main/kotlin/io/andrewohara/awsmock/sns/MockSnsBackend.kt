@@ -26,15 +26,17 @@ class MockSnsTopic(
     private val messages = mutableListOf<MockSnsMessage>()
     fun messages() = messages.toList()
 
-    fun publish(message: String, subject: String?) = MockSnsMessage(
+    fun publish(message: String, subject: String?, attributes: Map<String, String>?) = MockSnsMessage(
         messageId = "$name:${messages.size}",
         subject = subject,
-        message = message
+        message = message,
+        attributes = attributes ?: emptyMap()
     ).also { messages += it }
 }
 
 data class MockSnsMessage(
     val messageId: String,
     val subject: String?,
-    val message: String
+    val message: String,
+    val attributes: Map<String, String> = emptyMap()
 )

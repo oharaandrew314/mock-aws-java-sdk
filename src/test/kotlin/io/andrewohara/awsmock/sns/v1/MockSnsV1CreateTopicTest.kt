@@ -4,8 +4,10 @@ import com.amazonaws.services.sns.model.AmazonSNSException
 import com.amazonaws.services.sns.model.CreateTopicRequest
 import io.andrewohara.awsmock.sns.MockSnsBackend
 import io.andrewohara.awsmock.sns.MockSnsV1
-import io.andrewohara.awsmock.sns.v1.SnsUtils.assertMissingParameter
-import org.assertj.core.api.Assertions.*
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class MockSnsV1CreateTopicTest {
@@ -15,23 +17,24 @@ class MockSnsV1CreateTopicTest {
 
     @Test
     fun `create topic - without name throws exception`() {
-        val exception = catchThrowableOfType(
-                { client.createTopic(CreateTopicRequest()) },
-                AmazonSNSException::class.java
-        )
+        shouldThrow<AmazonSNSException> {
+            client.createTopic(CreateTopicRequest())
+        }
 
-        exception.assertMissingParameter("name")
-        assertThat(backend.topics()).isEmpty()
+        backend.topics().shouldBeEmpty()
     }
 
     @Test
     fun `create topic`() {
         val topic = client.createTopic("foo")
 
-        assertThat(backend.topics())
-            .hasSize(1)
-            .allMatch { it.arn == topic.topicArn }
-            .allMatch { it.name == "foo" }
+        backend.topics()
+            .shouldHaveSize(1)
+            .first()
+            .let {
+                it.arn shouldBe topic.topicArn
+                it.name shouldBe "foo"
+            }
     }
 
     @Test
@@ -39,10 +42,14 @@ class MockSnsV1CreateTopicTest {
         val original = client.createTopic("foo")
         val duplicate = client.createTopic("foo")
 
-        assertThat(duplicate.topicArn).isEqualTo(original.topicArn)
-        assertThat(backend.topics())
-            .hasSize(1)
-            .allMatch { it.name == "foo" }
-            .allMatch { it.arn == original.topicArn }
+        duplicate.topicArn shouldBe original.topicArn
+
+        backend.topics()
+            .shouldHaveSize(1)
+            .first()
+            .let {
+                it.arn shouldBe original.topicArn
+                it.name shouldBe "foo"
+            }
     }
 }
