@@ -99,4 +99,4 @@ your main runner will inject real SDKs, and your tests will inject the mocks.
 
 ## Samples
 
-There are some [Sample Snippets](tree/master/src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
+There are some [Sample Snippets](src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
