@@ -51,6 +51,9 @@ class MockSnsV2(private val backend: MockSnsBackend = MockSnsBackend()): SnsClie
     override fun publishBatch(request: PublishBatchRequest): PublishBatchResponse {
         val arn = request.topicArn() ?: throw SnsException.builder().message("arn must not be null").build()
         val topic = backend[arn] ?: throw NotFoundException.builder().message("Topic does not exist").build()
+        if (request.publishBatchRequestEntries().orEmpty().size > MockSnsBackend.BATCH_SIZE_LIMIT) {
+            throw SnsException.builder().message("batch size limit of ${MockSnsBackend.BATCH_SIZE_LIMIT}").build()
+        }
 
         val receipts = request.publishBatchRequestEntries()
             .withIndex()

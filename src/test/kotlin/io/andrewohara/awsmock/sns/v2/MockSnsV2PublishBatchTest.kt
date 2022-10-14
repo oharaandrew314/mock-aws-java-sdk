@@ -69,4 +69,17 @@ class MockSnsV2PublishBatchTest {
             )
         )
     }
+
+    @Test
+    fun `publishBatch - over batch size`() {
+        val topic = backend.createTopic("foo")
+
+        shouldThrow<SnsException> {
+            val entries = (1..11).map { entry }
+            client.publishBatch {
+                it.topicArn(topic.arn)
+                it.publishBatchRequestEntries(entries)
+            }
+        }
+    }
 }

@@ -68,4 +68,18 @@ class MockSnsV1PublishBatchTest {
             )
         )
     }
+
+    @Test
+    fun `publishBatch - over batch size`() {
+        val topic = backend.createTopic("foo")
+
+        shouldThrow<AmazonSNSException> {
+            val entries = (1..11).map { entry }
+            client.publishBatch(
+                PublishBatchRequest()
+                    .withTopicArn(topic.arn)
+                    .withPublishBatchRequestEntries(entries)
+            )
+        }
+    }
 }

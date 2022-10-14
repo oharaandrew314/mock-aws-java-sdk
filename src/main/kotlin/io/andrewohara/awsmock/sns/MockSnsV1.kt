@@ -57,6 +57,9 @@ class MockSnsV1(private val backend: MockSnsBackend = MockSnsBackend()): Abstrac
             errorCode = "NotFound"
             statusCode = 404
         }
+        if (request.publishBatchRequestEntries.orEmpty().size > MockSnsBackend.BATCH_SIZE_LIMIT) {
+            throw createValidationException("publishBatchRequestEntries")
+        }
 
         val receipts = request.publishBatchRequestEntries
             .withIndex()

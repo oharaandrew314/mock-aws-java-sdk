@@ -2,6 +2,10 @@ package io.andrewohara.awsmock.sns
 
 class MockSnsBackend {
 
+    companion object {
+        const val BATCH_SIZE_LIMIT = 10
+    }
+
     private val topics = mutableSetOf<MockSnsTopic>()
     fun topics() = topics.toSet()
 
