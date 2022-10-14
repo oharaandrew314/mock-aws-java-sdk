@@ -100,12 +100,3 @@ your main runner will inject real SDKs, and your tests will inject the mocks.
 ## Samples
 
 There are some [Sample Snippets](tree/master/src/test/kotlin/io/andrewohara/awsmock/samples) available to help get you started.
-
-## Gotchas
-
-### Dynamo DB V2
-
-When a query is performed on an index, the backend will not enforce that the index exist;
-This is due to a [cut feature](https://github.com/aws/aws-sdk-java-v2/issues/1771) in the enhanced client,
-where the schema generators will ignore the indices defined in your bean or immutable.
-This limitation does not exist in the v1 mapper, or for tables created with the backend directly.
