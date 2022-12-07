@@ -5,10 +5,15 @@ import io.andrewohara.awsmock.dynamodb.DynamoUtils.createCatsTable
 import io.andrewohara.awsmock.dynamodb.DynamoUtils.createOwnersTable
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV2
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV2.Companion.toV2
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoAttribute
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoItem
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
+import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemResponse
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
@@ -29,6 +34,23 @@ class V2BatchGetTest {
                 ))
             }
         }
+    }
+
+    @Test
+    fun `get oversized batch - truncate results`() {
+        val table = backend.createTable("ids", MockDynamoAttribute(MockDynamoAttribute.Type.Number, "id"))
+        val keys = (1..100).associate { id ->
+            table.save(MockDynamoItem("id" to MockDynamoValue(id)))
+            "id" to AttributeValue.builder().n(id.toString()).build()
+        }
+
+        val result = client.batchGetItem {
+            it.requestItems(mapOf(
+                "ids" to KeysAndAttributes.builder().keys(keys).build()
+            ))
+        }
+        result.responses().shouldHaveSize(25)
+        result.unprocessedKeys().shouldHaveSize(75)
     }
 
     @Test
