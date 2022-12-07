@@ -1,17 +1,73 @@
 package io.andrewohara.awsmock.dynamodb
 
 import io.andrewohara.awsmock.core.MockAwsException
-import io.andrewohara.awsmock.dynamodb.backend.*
+import io.andrewohara.awsmock.dynamodb.backend.BatchGetItemResult
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoAttribute
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoItem
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoSchema
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoTable
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoUpdate
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
+import io.andrewohara.awsmock.dynamodb.backend.TableAndItem
+import io.andrewohara.awsmock.dynamodb.backend.validationFailed
+import software.amazon.awssdk.awscore.AwsRequestOverrideConfiguration
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails
 import software.amazon.awssdk.awscore.exception.AwsServiceException
+import software.amazon.awssdk.core.ApiName
 import software.amazon.awssdk.core.SdkBytes
+import software.amazon.awssdk.core.util.VersionInfo
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import software.amazon.awssdk.services.dynamodb.model.*
+import software.amazon.awssdk.services.dynamodb.model.AttributeAction
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate
+import software.amazon.awssdk.services.dynamodb.model.BatchGetItemRequest
+import software.amazon.awssdk.services.dynamodb.model.BatchGetItemResponse
+import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemResponse
+import software.amazon.awssdk.services.dynamodb.model.ComparisonOperator
+import software.amazon.awssdk.services.dynamodb.model.Condition
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest
+import software.amazon.awssdk.services.dynamodb.model.CreateTableResponse
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemResponse
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableResponse
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableResponse
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbRequest
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse
+import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndexDescription
+import software.amazon.awssdk.services.dynamodb.model.IndexStatus
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement
+import software.amazon.awssdk.services.dynamodb.model.KeyType
+import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes
+import software.amazon.awssdk.services.dynamodb.model.ListTablesRequest
+import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse
+import software.amazon.awssdk.services.dynamodb.model.LocalSecondaryIndexDescription
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest
+import software.amazon.awssdk.services.dynamodb.model.PutItemResponse
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse
+import software.amazon.awssdk.services.dynamodb.model.ResourceInUseException
+import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
+import software.amazon.awssdk.services.dynamodb.model.ScanRequest
+import software.amazon.awssdk.services.dynamodb.model.ScanResponse
+import software.amazon.awssdk.services.dynamodb.model.TableDescription
+import software.amazon.awssdk.services.dynamodb.model.TableStatus
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemResponse
+import software.amazon.awssdk.services.dynamodb.paginators.BatchGetItemIterable
 import software.amazon.awssdk.services.dynamodb.paginators.QueryIterable
 import software.amazon.awssdk.services.dynamodb.paginators.ScanIterable
-import java.lang.IllegalStateException
-import java.lang.UnsupportedOperationException
-import java.util.*
+import java.util.UUID
+import java.util.function.Consumer
+
 
 class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend()): DynamoDbClient {
     override fun close() {}
@@ -61,19 +117,29 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
     }
 
     override fun batchGetItem(request: BatchGetItemRequest): BatchGetItemResponse {
-        val requests = request.requestItems()
-            .mapValues { it.value.keys().map { key -> key.toMock() } }
-
-        val results = try {
-            backend.getAll(requests)
+        return try {
+            val result = backend.getAll(request.toInternal())
+            if (request.isPaginated()) result else result.throwIfUnprocessed()
         } catch (e: MockAwsException) {
             throw e.toV2()
-        }
+        }.toV2()
+    }
 
-        return BatchGetItemResponse.builder()
-            .responses(results.mapValues { it.value.map { item -> item.toV2() } })
-            .unprocessedKeys(emptyMap())  // TODO implement
-            .build()
+    private fun BatchGetItemRequest.toInternal() = requestItems().flatMap { (tableName, data) ->
+        data.keys().map { TableAndItem(tableName, it.toMock()) }
+    }
+
+    private fun BatchGetItemResult.toV2() = BatchGetItemResponse.builder()
+        .responses(results.groupBy({it.tableName}, {it.item.toV2()}))
+        .unprocessedKeys(
+            unprocessed
+                .groupBy { it.tableName }
+                .mapValues { (_, keys) -> KeysAndAttributes.builder().keys(keys.map { it.item.toV2() }).build() }
+        )
+        .build()
+
+    override fun batchGetItemPaginator(request: BatchGetItemRequest): BatchGetItemIterable {
+        return BatchGetItemIterable(this, request.withPagination())
     }
 
     override fun batchWriteItem(request: BatchWriteItemRequest): BatchWriteItemResponse {
@@ -413,4 +479,22 @@ class MockDynamoDbV2(private val backend: MockDynamoBackend = MockDynamoBackend(
             value = value()?.toMock()
         )
     }
+
+    private fun <T : DynamoDbRequest> DynamoDbRequest.withPagination(): T {
+        val userAgentApplier = Consumer<AwsRequestOverrideConfiguration.Builder> {
+            val apiName = ApiName.builder()
+                .version(VersionInfo.SDK_VERSION).name("PAGINATED")
+                .build()
+            it.addApiName(apiName)
+        }
+        val overrideConfiguration = overrideConfiguration()
+            .map { it.toBuilder().applyMutation(userAgentApplier).build() }
+            .orElse(AwsRequestOverrideConfiguration.builder().applyMutation(userAgentApplier).build())
+
+        return toBuilder().overrideConfiguration(overrideConfiguration).build() as T
+    }
 }
+
+private fun DynamoDbRequest.isPaginated() = overrideConfiguration()
+    .map { config -> config.apiNames().any { it.name() == "PAGINATED" } }
+    .orElse(false)

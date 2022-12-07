@@ -3,6 +3,7 @@ package io.andrewohara.awsmock.dynamodb
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.dynamodbv2.AbstractAmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
+import com.amazonaws.services.dynamodbv2.model.BatchGetItemResult
 import io.andrewohara.awsmock.core.MockAwsException
 import io.andrewohara.awsmock.dynamodb.backend.*
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoCondition.Companion.beginsWith
@@ -201,18 +202,24 @@ class MockDynamoDbV1(private val backend: MockDynamoBackend = MockDynamoBackend(
     }
 
     override fun batchGetItem(request: BatchGetItemRequest): BatchGetItemResult {
-        val requests = request.requestItems
-            .mapValues { it.value.keys.map { key -> key.toMock() } }
+        val requests = request.requestItems.flatMap { (tableName, data) ->
+            data.keys.map { TableAndItem(tableName, it.toMock()) }
+        }
 
-        val results = try {
+        val result = try {
             backend.getAll(requests)
+                .throwIfUnprocessed()
         } catch (e: MockAwsException) {
             throw e.toV1()
         }
 
         return BatchGetItemResult()
-            .withResponses(results.mapValues { it.value.map { item -> item.toV1() } })
-            .withUnprocessedKeys(emptyMap())  // TODO implement
+            .withResponses(result.results.groupBy({it.tableName}, {it.item.toV1()}))
+            .withUnprocessedKeys(
+                result.unprocessed
+                    .groupBy { it.tableName }
+                    .mapValues { (_, keys) -> KeysAndAttributes().withKeys(keys.map { it.item.toV1() }) }
+            )
     }
 
     override fun deleteTable(request: DeleteTableRequest): DeleteTableResult {

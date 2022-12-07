@@ -1,11 +1,15 @@
 package io.andrewohara.awsmock.dynamodb.v2
 
 import io.andrewohara.awsmock.dynamodb.MockDynamoDbV2
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoAttribute
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoItem
+import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -18,6 +22,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*
 import software.amazon.awssdk.enhanced.dynamodb.model.EnhancedGlobalSecondaryIndex
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest
+import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.Projection
 import software.amazon.awssdk.services.dynamodb.model.ProjectionType
@@ -26,10 +31,11 @@ import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
 class V2TableMapperUnitTest {
 
     private val backend = MockDynamoBackend()
-    private val table = DynamoDbEnhancedClient.builder()
+    private val client = DynamoDbEnhancedClient.builder()
         .dynamoDbClient(MockDynamoDbV2(backend))
         .build()
-        .let { DynamoV2Cat.create(it) }
+
+    private val table = DynamoV2Cat.create(client)
 
     private val toggles = DynamoV2Cat(2, "Toggles", "female")
     private val smokey = DynamoV2Cat(1, "Smokey", "female")
@@ -172,6 +178,27 @@ class V2TableMapperUnitTest {
         ).flatMap { it.items() }
             .toList()
             .shouldContainExactly(smokey)
+    }
+
+    @Test
+    fun `batch get`() {
+        val keys = (1..150).map { id ->
+            val cat = DynamoV2Cat(ownerId = toggles.ownerId, name = "cat$id")
+            table.putItem(cat)
+            Key.builder().partitionValue(cat.ownerId).sortValue(cat.name).build()
+        }
+
+        client.batchGetItem {
+            val batch = ReadBatch.builder(DynamoV2Cat::class.java).apply {
+                mappedTableResource(table)
+                for (key in keys) {
+                    addGetItem(key)
+                }
+            }.build()
+
+            it.addReadBatch(batch)
+        }.resultsForTable(table)
+            .shouldHaveSize(150)
     }
 }
 
