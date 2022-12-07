@@ -9,12 +9,14 @@ import io.andrewohara.awsmock.dynamodb.backend.MockDynamoAttribute
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoBackend
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoItem
 import io.andrewohara.awsmock.dynamodb.backend.MockDynamoValue
-import io.kotest.matchers.maps.shouldHaveSize
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemResponse
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
 
@@ -37,20 +39,39 @@ class V2BatchGetTest {
     }
 
     @Test
-    fun `get oversized batch - truncate results`() {
+    fun `get oversized batch - error`() {
         val table = backend.createTable("ids", MockDynamoAttribute(MockDynamoAttribute.Type.Number, "id"))
-        val keys = (1..100).associate { id ->
+        val keys = (1..150).map { id ->
             table.save(MockDynamoItem("id" to MockDynamoValue(id)))
-            "id" to AttributeValue.builder().n(id.toString()).build()
+            mapOf("id" to AttributeValue.builder().n(id.toString()).build())
         }
 
-        val result = client.batchGetItem {
-            it.requestItems(mapOf(
-                "ids" to KeysAndAttributes.builder().keys(keys).build()
-            ))
+        val error = shouldThrow<DynamoDbException> {
+            client.batchGetItem {
+                it.requestItems(mapOf(
+                    "ids" to KeysAndAttributes.builder().keys(keys).build()
+                ))
+            }
         }
-        result.responses().shouldHaveSize(25)
-        result.unprocessedKeys().shouldHaveSize(75)
+
+        error.statusCode() shouldBe 400
+    }
+
+    @Test
+    fun `get paginated batch`() {
+        val table = backend.createTable("ids", MockDynamoAttribute(MockDynamoAttribute.Type.Number, "id"))
+        val keys = (1..150).map { id ->
+            table.save(MockDynamoItem("id" to MockDynamoValue(id)))
+            mapOf("id" to AttributeValue.builder().n(id.toString()).build())
+        }
+
+        client.batchGetItemPaginator {
+            it.requestItems(
+                mapOf("ids" to KeysAndAttributes.builder().keys(keys).build())
+            )
+
+        }.flatMap { it.responses().getValue("ids") }
+            .shouldHaveSize(150)
     }
 
     @Test
