@@ -9,6 +9,71 @@ Supporting:
 - V1 Java SDK
 - V2 Java SDK
 
+## Deprecation
+
+This project is being continued in [Http4k-Connect](https://github.com/http4k/http4k-connect).
+
+See below for how to migrate your SDK to 
+
+### Migrate: Official V1 SDK
+
+You can point the SDK to a fake server running in network mode.
+
+```kotlin
+FakeSNS().start().use { server ->
+    val client = AmazonSNSClient.builder()
+        .withEndpointConfiguration(
+            AwsClientBuilder.EndpointConfiguration(
+                "http://localhost:${server.port()}",
+                "ca-central-1"
+            )
+        )
+        .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("id", "secret")))
+        .build()
+
+    // do stuff with client
+}
+```
+
+### Migrate: Official V2 SDK
+
+You can use an adapter to point the SDK to a fake in-memory server.
+
+```kotlin
+val fakeS3 = FakeS3() // from http4k-connect-amazon-s3-fake
+val clientAdapter = AwsSdkClient(fakeS3) // from http4k-aws
+
+val s3Client = S3Client.builder()
+    .httpClient(clientAdapter)
+    .credentialsProvider { AwsBasicCredentials.create("id", "secret") }
+    .build()
+
+// do stuff with client
+```
+
+For more information, see [Http4k Connect Examples - Fakes in Offical AWS SDK](https://github.com/http4k/http4k-connect-examples/tree/master/fakes-in-official-aws-sdk)
+
+### Migrate: Http4k-Connect SDK
+
+[Http4k Connect](https://github.com/http4k/http4k-connect) provides its own Kotlin SDK that's far superior to the official java SDKs in terms of:
+- serialization performance
+- footprint
+- Kotlin-friendliness
+
+```kotlin
+val fake = FakeSNS()
+        
+val client = SNS.Http(
+    region = Region.CA_CENTRAL_1,
+    credentialsProvider = { AwsCredentials("key", "secret") },
+    http = fake
+)
+
+val client2 = fake.client()  // Or even simpler...
+
+// do stuff with client
+```
+
 ## Requirements
 
 - java 8 and above
