@@ -9,11 +9,8 @@ Supporting:
 - V1 Java SDK
 - V2 Java SDK
 
-## Deprecation
-
-This project is being continued in [Http4k-Connect](https://github.com/http4k/http4k-connect).
-
-See below for how to migrate your SDK to 
+> **THIS PROJECT IS NO LONGER MAINTAINED**
+> Check below for instructions to migrate to [Http4k-Connect](https://github.com/http4k/http4k-connect)
 
 ### Migrate: Official V1 SDK
 
